@@ -1,0 +1,189 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import {
+  comparePublications,
+  dedupePublications,
+  pubMatchesTheme,
+} from "@lib/publications";
+
+// Themes are pulled from the content collection so Jonathan can add or
+// rework lines of work by editing markdown, not code. Draft themes are
+// hidden on the index page.
+const themes = (await getCollection("themes"))
+  .filter((t) => !t.data.draft)
+  .sort((a, b) => a.data.order - b.data.order);
+
+// Pre-compute a per-theme paper count (read-time filter on topics). This
+// lets the index hint "12 papers" without loading the full paper list for
+// each card, and mirrors exactly what /research/<slug> will show.
+const allPubs = dedupePublications(await getCollection("publications")).sort(
+  comparePublications,
+);
+const countsBySlug = new Map<string, number>();
+for (const theme of themes) {
+  const n = allPubs.filter((p) => pubMatchesTheme(p, theme.data)).length;
+  countsBySlug.set(theme.slug, n);
+}
+
+// Collaborating organizations, shown as badges at the bottom of the page.
+// To display a real logo instead of the name, drop an SVG into
+// public/images/collaborators/ and set `logo` to its path — the badge
+// switches from text to image automatically. Badges keep a light
+// background in dark mode so dark logo artwork stays legible.
+interface Collaborator {
+  name: string;
+  logo?: string;
+  /** Tailwind height class for the logo. Default h-6; use to optically
+   *  balance wordmarks with unusually large or small x-heights. */
+  logoHeight?: string;
+}
+const collaborators: Collaborator[] = [
+  { name: "Infleqtion", logo: "/images/collaborators/infleqtion.png" },
+  { name: "IBM", logo: "/images/collaborators/ibm.svg" },
+  {
+    name: "Amazon",
+    logo: "/images/collaborators/amazon.svg",
+    // Amazon's wordmark has a big x-height — cap it slightly lower so it
+    // doesn't read bolder than the other logos.
+    logoHeight: "h-5",
+  },
+  {
+    name: "Lawrence Berkeley National Laboratory",
+    logo: "/images/collaborators/lbnl.svg",
+  },
+  { name: "University of Chicago" },
+  { name: "Duke University" },
+  { name: "Princeton University" },
+];
+---
+
+<BaseLayout
+  title="Research — The Baker Group"
+  description="Research themes in fault-tolerant quantum computer architecture, including logical compilation, scheduling, calibration, decoding, and hardware-code co-design."
+>
+  <section class="container-page py-16">
+    <h1 class="sr-only">Research</h1>
+    {
+      themes.length === 0 ? (
+        <p class="text-sm text-crust-700 dark:text-crust-300 leading-relaxed">
+          No research themes have been published yet. Add markdown files to{" "}
+          <code class="font-mono text-burnt-700 dark:text-burnt-300">
+            src/content/themes/
+          </code>
+          .
+        </p>
+      ) : (
+        <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+          {themes.map((theme, i) => {
+            const count = countsBySlug.get(theme.slug) ?? 0;
+            return (
+              <li class="flex">
+                <a
+                  href={`/research/${theme.slug}`}
+                  class="group flex flex-col w-full rounded-2xl border border-crust-200/80 bg-crust-100/40 p-6
+                         transition hover:-translate-y-0.5 hover:border-burnt-400/70 hover:shadow-warm-md
+                         dark:border-crust-800/80 dark:bg-crust-900/50
+                         dark:hover:border-burnt-500/60 no-underline"
+                >
+                  <p class="eyebrow">{String(i + 1).padStart(2, "0")}</p>
+                  <h2
+                    class="mt-2 font-serif text-2xl text-crust-900 dark:text-crust-50
+                           group-hover:text-burnt-700 dark:group-hover:text-burnt-300
+                           transition-colors text-balance"
+                  >
+                    {theme.data.title}
+                  </h2>
+                  {theme.data.tagline && (
+                    <p class="mt-2 text-sm italic text-crust-700 dark:text-crust-300">
+                      {theme.data.tagline}
+                    </p>
+                  )}
+                  {theme.data.summary && (
+                    <p class="mt-4 text-sm text-crust-800 dark:text-crust-200 leading-relaxed text-pretty">
+                      {theme.data.summary}
+                    </p>
+                  )}
+                  <div class="mt-auto pt-5 flex items-center justify-between text-xs">
+                    <span class="font-mono text-crust-500 dark:text-crust-400 tabular-nums">
+                      {count} paper{count === 1 ? "" : "s"}
+                    </span>
+                    <span
+                      class="link-burnt inline-flex items-center gap-1 text-sm"
+                      aria-hidden="true"
+                    >
+                      Explore
+                      <span class="transition-transform group-hover:translate-x-0.5">
+                        &rarr;
+                      </span>
+                    </span>
+                  </div>
+                </a>
+              </li>
+            );
+          })}
+          <!-- Sixth card: Teddy, the group dog. Same card frame as the
+               themes, but the inside is just his photo (padded + rounded
+               to match). Links to his people page. -->
+          <li class="flex">
+            <a
+              href="/people/teddy"
+              aria-label="Teddy, the group dog"
+              class="group flex w-full aspect-square rounded-2xl border border-crust-200/80 bg-crust-100/40 p-6
+                     transition hover:-translate-y-0.5 hover:border-burnt-400/70 hover:shadow-warm-md
+                     dark:border-crust-800/80 dark:bg-crust-900/50
+                     dark:hover:border-burnt-500/60 no-underline"
+            >
+              <img
+                src="/images/people/teddy.jpeg"
+                alt="Teddy, a fluffy white Samoyed and the group's dog"
+                class="w-full h-full object-cover rounded-xl"
+                loading="lazy"
+              />
+            </a>
+          </li>
+        </ul>
+      )
+    }
+  </section>
+
+  <section class="container-page pb-24">
+    <div
+      class="rounded-2xl border border-crust-200/80 bg-crust-100/40 p-8
+                dark:border-crust-800/80 dark:bg-crust-900/50"
+    >
+      <h2 class="font-serif text-2xl text-crust-900 dark:text-crust-50">
+        Collaborators
+      </h2>
+      <p class="mt-2 text-crust-700 dark:text-crust-300">
+        We work with experimental, theoretical, and engineering groups across
+        UT and beyond.
+      </p>
+      <ul class="mt-6 flex flex-wrap items-center gap-3">
+        {
+          collaborators.map((c) => (
+            <li
+              class="inline-flex h-14 items-center rounded-xl border border-crust-200
+                     bg-white/80 px-5
+                     dark:border-crust-600 dark:bg-crust-50/90"
+            >
+              {c.logo ? (
+                <img
+                  src={c.logo}
+                  alt={`${c.name} logo`}
+                  title={c.name}
+                  class:list={[c.logoHeight ?? "h-6", "w-auto max-w-[10rem]"]}
+                  loading="lazy"
+                />
+              ) : (
+                <span class="font-serif text-base text-crust-900 whitespace-nowrap">
+                  {c.name}
+                </span>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</BaseLayout>

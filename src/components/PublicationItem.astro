@@ -1,0 +1,114 @@
+---
+interface Props {
+  title: string;
+  authors: string[];
+  venue: string;
+  year: number;
+  pdf?: string;
+  arxiv?: string;
+  code?: string;
+  doi?: string;
+  highlight?: string;
+  /** Short venue label ("ASPLOS", "arXiv") shown bottom-right as a chip. */
+  badge?: string;
+  /** One or more author-name strings to render in bold. Matches exact strings
+   *  against the paper's author list (case-insensitive). */
+  boldNames?: string[];
+  /** Research-theme slugs this paper falls under. Emitted as a data attribute
+   *  so the /publications filter bar can toggle visibility without JS on the
+   *  server side. Pipe-separated for easy splitting in the client. */
+  themes?: string[];
+}
+const {
+  title,
+  authors,
+  venue,
+  year,
+  pdf,
+  arxiv,
+  code,
+  doi,
+  highlight,
+  badge,
+  boldNames = ["Jonathan M. Baker"],
+  themes = [],
+} = Astro.props;
+const themesAttr = themes.join("|");
+const boldSet = new Set(boldNames.map((n) => n.toLowerCase().trim()));
+
+// The title links to the paper's landing page (never the raw PDF): the DOI
+// (publisher page) when available, otherwise the arXiv abstract page.
+const titleHref = doi ?? arxiv;
+
+// Skip the italic venue line for arXiv entries — the badge already says
+// arXiv, and OpenAlex's "arXiv (Cornell University)" phrasing is stale.
+const showVenue = venue && !/arxiv/i.test(venue);
+
+// When a published paper's only PDF is the arXiv copy, say so — the reader
+// should know it may differ from the version of record.
+const pdfLabel =
+  pdf && showVenue && /arxiv\.org/i.test(pdf) ? "PDF (arXiv)" : "PDF";
+---
+
+<li
+  class="py-5 border-b border-crust-200/80 last:border-0 dark:border-crust-800/80"
+  data-pub-themes={themesAttr}
+>
+  <div class="flex items-baseline gap-3">
+    <span class="font-mono text-xs text-crust-500 dark:text-crust-400 tabular-nums">{year}</span>
+    <h3 class="font-serif text-lg leading-snug text-crust-900 dark:text-crust-50">
+      {
+        titleHref ? (
+          <a
+            href={titleHref}
+            class="no-underline hover:underline underline-offset-2 text-inherit"
+          >
+            {title}
+          </a>
+        ) : (
+          title
+        )
+      }
+    </h3>
+  </div>
+
+  <p class="mt-1 ml-10 text-sm text-crust-700 dark:text-crust-300 leading-relaxed">
+    {
+      // Keep `<span>` and the separator on the same line inside each map
+      // iteration — putting the `{sep}` expression on a new line made
+      // Astro emit a space before the comma in the rendered HTML.
+      authors.map((a, i) => {
+        const isBold = boldSet.has(a.toLowerCase().trim());
+        const sep = i < authors.length - 1 ? ", " : "";
+        return isBold
+          ? <><span class="font-semibold text-crust-900 dark:text-crust-50">{a}</span>{sep}</>
+          : <>{a}{sep}</>;
+      })
+    }
+  </p>
+  {showVenue && (
+    <p class="ml-10 text-sm italic text-crust-600 dark:text-crust-400">{venue}</p>
+  )}
+
+  {highlight && (
+    <p class="ml-10 mt-2 max-w-2xl rounded-xl bg-butter-50 border border-butter-200/80 px-3 py-2
+              text-sm text-crust-800
+              dark:bg-butter-500/10 dark:border-butter-400/30 dark:text-crust-100">
+      <span class="font-semibold text-burnt-700 dark:text-burnt-300">Highlight:</span> {highlight}
+    </p>
+  )}
+
+  <div class="ml-10 mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+    <ul class="flex flex-wrap gap-x-4 gap-y-1">
+      {pdf && <li><a class="link-burnt" href={pdf}>{pdfLabel}</a></li>}
+      {arxiv && <li><a class="link-burnt" href={arxiv}>arXiv</a></li>}
+      {doi && <li><a class="link-burnt" href={doi}>DOI</a></li>}
+      {code && <li><a class="link-burnt" href={code}>Code</a></li>}
+    </ul>
+    {badge && (
+      <span class="ml-auto font-mono uppercase tracking-wide text-crust-500 dark:text-crust-400">
+        {badge}
+      </span>
+    )}
+  </div>
+</li>

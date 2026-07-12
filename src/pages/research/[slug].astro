@@ -1,0 +1,154 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import PublicationItem from "@components/PublicationItem.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+import {
+  comparePublications,
+  dedupePublications,
+  pubMatchesTheme,
+} from "@lib/publications";
+
+export async function getStaticPaths() {
+  const themes = (await getCollection("themes")).filter(
+    (t) => !t.data.draft,
+  );
+  return themes.map((theme) => ({
+    params: { slug: theme.slug },
+    props: { theme },
+  }));
+}
+
+interface Props {
+  theme: CollectionEntry<"themes">;
+}
+
+const { theme } = Astro.props;
+const { Content } = await theme.render();
+
+// Papers that fall under this theme — substring match on OpenAlex topics.
+// The `maps_topics` list in the theme's frontmatter is the only thing that
+// drives this; no editing per-paper needed.
+const allPubs = await getCollection("publications");
+const themePubs = dedupePublications(
+  allPubs.filter((p) => pubMatchesTheme(p, theme.data)),
+).sort(comparePublications);
+
+// PI bold treatment mirrors /publications — pull canonical name and aliases
+// from the people collection so it stays consistent across the site.
+const allPeople = await getCollection("people");
+const pi = allPeople.find((p) => p.data.role === "PI");
+const piNames = pi
+  ? [
+      pi.data.name.replace(/^(Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s+/, ""),
+      ...(pi.data.aliases ?? []),
+    ]
+  : ["Jonathan M. Baker"];
+
+// "Related topics" chips — the actual OpenAlex topic strings that appear on
+// papers routed to this theme. Useful as a sanity check and as hover-state
+// context ("why is this paper here?").
+const relatedTopics = Array.from(
+  new Set(themePubs.flatMap((p) => p.data.topics ?? [])),
+).sort();
+---
+
+<BaseLayout
+  title={`${theme.data.title} — Research — The Baker Group`}
+  description={
+    theme.data.summary ??
+    theme.data.tagline ??
+    `${theme.data.title} — research theme in The Baker Group at UT Austin.`
+  }
+>
+  <section class="container-narrow py-16">
+    <a href="/research" class="inline-flex items-center gap-2 text-sm link-burnt">
+      <span aria-hidden="true">&larr;</span>
+      Back to research
+    </a>
+
+    <header class="mt-6">
+      <p class="eyebrow">Research theme</p>
+      <h1
+        class="mt-1 font-serif text-4xl sm:text-5xl tracking-tight text-balance
+               text-crust-900 dark:text-crust-50"
+      >
+        {theme.data.title}
+      </h1>
+      {
+        theme.data.tagline && (
+          <p class="mt-3 text-lg italic text-crust-700 dark:text-crust-300 text-pretty">
+            {theme.data.tagline}
+          </p>
+        )
+      }
+    </header>
+
+    <div class="prose dark:prose-invert max-w-none font-sans mt-8">
+      <Content />
+    </div>
+
+    {
+      relatedTopics.length > 0 && (
+        <div class="mt-10">
+          <p class="eyebrow mb-2">Related topics</p>
+          <ul class="flex flex-wrap gap-2">
+            {relatedTopics.map((t) => (
+              <li class="chip">{t}</li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    <hr class="my-12 border-crust-200 dark:border-crust-800" />
+
+    <div class="flex items-baseline gap-3 mb-6">
+      <h2 class="font-serif text-2xl text-crust-900 dark:text-crust-50">
+        Publications in this area
+      </h2>
+      <span
+        class="font-mono text-xs text-crust-500 dark:text-crust-400 tabular-nums"
+      >
+        {themePubs.length} paper{themePubs.length === 1 ? "" : "s"}
+      </span>
+    </div>
+
+    {
+      themePubs.length === 0 ? (
+        <p class="text-sm text-crust-700 dark:text-crust-300 leading-relaxed">
+          No publications are currently tagged to this theme.
+          {theme.data.maps_topics.length === 0 &&
+          theme.data.maps_keywords.length === 0 ? (
+            <span>
+              {" "}Add <code class="font-mono text-burnt-700 dark:text-burnt-300">maps_topics</code>
+              {" "}or <code class="font-mono text-burnt-700 dark:text-burnt-300">maps_keywords</code>
+              {" "}entries to this theme's frontmatter to wire it up.
+            </span>
+          ) : (
+            <span>
+              {" "}Matching papers will appear after the next publication sync.
+            </span>
+          )}
+        </p>
+      ) : (
+        <ol>
+          {themePubs.map((p) => (
+            <PublicationItem
+              title={p.data.title}
+              authors={p.data.authors}
+              venue={p.data.venue}
+              year={p.data.year}
+              pdf={p.data.pdf}
+              arxiv={p.data.arxiv}
+              doi={p.data.doi}
+              code={p.data.code}
+              highlight={p.data.highlight}
+              badge={p.data.badge}
+              boldNames={piNames}
+            />
+          ))}
+        </ol>
+      )
+    }
+  </section>
+</BaseLayout>

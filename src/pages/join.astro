@@ -1,0 +1,97 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const openings = [
+  {
+    role: "PhD Students",
+    status: "Open",
+    body: "We admit PhD students through the UT Austin ECE graduate program.\n\nEmail Prof. Baker to introduce yourself well before the application deadline; applicants who reach out ahead of time are much more likely to be considered. \n\nWhen you apply, list your desired program as ACSES and mention the group in your statement.",
+    cta: { label: "ECE Graduate Admissions", href: "https://www.ece.utexas.edu/graduate" },
+  },
+  // Hidden for now; re-enable when we're actively recruiting again.
+  // {
+  //   role: "Postdoctoral Researchers",
+  //   status: "Rolling",
+  //   body: "We consider postdoc applications when funding permits. Current interests include fault-tolerant architecture, logical compilation, scheduling and control, calibration, and decoder-aware system design.",
+  //   cta: { label: "Email the PI", href: "mailto:jonathan.baker@austin.utexas.edu" },
+  // },
+  {
+    role: "Undergraduate Researchers",
+    status: "Open",
+    body: "UT Austin undergraduates can join through independent study or the ECE honors thesis program. Before reaching out, read through some of the group's publications and pick a paper you find interesting. In your email, tell us which one and why, in your own words and without using AI tools; this helps shape what you might work on. Prior quantum-computing experience is helpful but not required. Careful programming and analysis matter more.",
+    cta: { label: "Independent study info", href: "/teaching" },
+  },
+  // Hidden for now; re-enable when we're actively hosting visitors again.
+  // {
+  //   role: "Visiting Researchers",
+  //   status: "Case-by-case",
+  //   body: "We occasionally host short-term visitors from partner institutions. Reach out with a concise description of the research question you would like to pursue.",
+  //   cta: { label: "Get in touch", href: "mailto:jonathan.baker@austin.utexas.edu" },
+  // },
+];
+---
+
+<BaseLayout
+  title="Join — The Baker Group"
+  description="Openings for PhD students and undergraduate researchers in The Baker Group at UT Austin."
+>
+  <section class="container-page py-16">
+    <h1 class="sr-only">Join the group</h1>
+    <div class="grid gap-5 md:grid-cols-2">
+      {
+        openings.map((o) => (
+          <article class="card flex flex-col gap-3">
+            <div class="flex items-center gap-3">
+              <h2 class="font-serif text-xl text-crust-900 dark:text-crust-50">{o.role}</h2>
+              <span class:list={[
+                "chip",
+                o.status === "Open"
+                  ? "bg-butter-100 border-butter-200 text-burnt-700 dark:bg-butter-500/15 dark:border-butter-400/30 dark:text-burnt-300"
+                  : "",
+              ]}>{o.status}</span>
+            </div>
+            <div class="space-y-3">
+              {o.body.split(/\n\s*\n/).map((para) => (
+                <p class="text-sm text-crust-700 dark:text-crust-300 leading-relaxed">{para}</p>
+              ))}
+            </div>
+            <a href={o.cta.href} class="mt-auto link-burnt text-sm">
+              {o.cta.label} &rarr;
+            </a>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="mt-16 rounded-3xl bg-gradient-to-br from-crust-200 via-butter-100 to-burnt-100 p-10 sm:p-12 shadow-warm-lg
+                dark:from-crust-800 dark:via-crust-900 dark:to-burnt-900/60">
+      <div class="grid gap-8 md:grid-cols-[1.2fr_1fr] items-start">
+        <div>
+          <h2 class="font-serif text-2xl sm:text-3xl text-crust-900 dark:text-crust-50 text-balance">
+            Before you email
+          </h2>
+          <ul class="mt-4 space-y-2 text-crust-800 dark:text-crust-200 text-sm leading-relaxed list-disc pl-5
+                     marker:text-burnt-500 dark:marker:text-burnt-300">
+            <li>Start your subject line with <span class="font-mono">[Group inquiry]</span> so your email is easy to spot.</li>
+            <li>Tell us which part of the group's work you are interested in and why. Undergraduates: name a group paper that interests you and why, written yourself, without AI tools.</li>
+            <li>Attach or link to your CV (PDF). A portfolio of code or writing is welcome but not required.</li>
+            <li>It is fine to be new to quantum computing. Strong systems, programming, math, or experimental background can transfer well.</li>
+          </ul>
+        </div>
+        <div class="rounded-2xl bg-crust-50/90 border border-crust-200 p-6
+                    dark:bg-crust-900/70 dark:border-crust-700">
+          <p class="eyebrow">Contact</p>
+          <p class="mt-3 font-serif text-lg text-crust-900 dark:text-crust-50">Prof. Jonathan M. Baker</p>
+          <a class="link-burnt text-sm" href="mailto:jonathan.baker@austin.utexas.edu?subject=%5BGroup%20inquiry%5D">jonathan.baker@austin.utexas.edu</a>
+
+          <p class="mt-5 eyebrow">Department</p>
+          <address class="mt-2 not-italic text-sm text-crust-700 dark:text-crust-300 leading-relaxed">
+            Dept. of Electrical &amp; Computer Engineering<br />
+            UT Austin &middot; 2501 Speedway<br />
+            Austin, TX 78712
+          </address>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

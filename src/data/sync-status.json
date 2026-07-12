@@ -1,0 +1,127 @@
+{
+  "lastSynced": "2026-07-13T00:50:27.226Z",
+  "totalSyncedPublications": 47,
+  "removedStale": 0,
+  "perPerson": {
+    "aditi-awasthi": {
+      "name": "Aditi Awasthi",
+      "authorId": "A5004049067",
+      "kept": 6,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 10,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 16,
+      "skipped": false
+    },
+    "ali": {
+      "name": "Ali Bo Khamseen",
+      "authorId": null,
+      "kept": 0,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 0,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 0,
+      "skipped": true
+    },
+    "baker": {
+      "name": "Prof. Jonathan M. Baker",
+      "authorId": "A5086527772",
+      "kept": 58,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 32,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 90,
+      "skipped": false
+    },
+    "cordell-mazzetti": {
+      "name": "Cordell Mazzetti",
+      "authorId": "A5133579213",
+      "kept": 1,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 0,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 1,
+      "skipped": false
+    },
+    "devika": {
+      "name": "Devika Nambisan",
+      "authorId": null,
+      "kept": 0,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 0,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 0,
+      "skipped": true
+    },
+    "maxwell-poster": {
+      "name": "Maxwell Poster",
+      "authorId": "A5115840517",
+      "kept": 6,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 0,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 6,
+      "skipped": false
+    },
+    "sahil-khan": {
+      "name": "Sahil Khan",
+      "authorId": "A5128128161",
+      "kept": 7,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 2,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 9,
+      "skipped": false
+    },
+    "sarvesh-raghuraman": {
+      "name": "Sarvesh Raghuraman",
+      "authorId": "A0000000000",
+      "kept": 0,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 0,
+      "filteredPostAlumni": 0,
+      "extraAdded": 1,
+      "coauthorRescued": 0,
+      "total": 0,
+      "skipped": false
+    },
+    "sayam-sethi": {
+      "name": "Sayam Sethi",
+      "authorId": "A5103060287",
+      "kept": 1,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 80,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 81,
+      "skipped": false
+    },
+    "teddy": {
+      "name": "Teddy",
+      "authorId": null,
+      "kept": 0,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 0,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 0,
+      "skipped": true
+    }
+  }
+}

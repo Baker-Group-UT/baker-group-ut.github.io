@@ -1,0 +1,265 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import PublicationItem from "@components/PublicationItem.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+import syncStatusRaw from "@data/sync-status.json";
+import {
+  comparePublications,
+  isPreprintVenue,
+  pubDedupKey,
+  pubMatchesTheme,
+} from "@lib/publications";
+
+// The initial committed JSON has `lastSynced: null`; once the workflow
+// runs, it's an ISO string. Cast to a loose shape so both states type-check.
+const syncStatus = syncStatusRaw as {
+  lastSynced: string | null;
+  totalSyncedPublications: number;
+  removedStale?: number;
+  perPerson: Record<string, unknown>;
+};
+
+type Pub = CollectionEntry<"publications">;
+
+const rawPubs = (await getCollection("publications")).sort(comparePublications);
+
+// Dedupe by canonical identity (arXiv id → DOI → OpenAlex ID → title; see
+// pubDedupKey). When the same paper appears twice (e.g. a manual entry +
+// an auto-synced copy, or a preprint + its published version), prefer the
+// published version and union the `people`/`topics` arrays across copies,
+// inheriting any links the kept copy is missing.
+const seen = new Map<string, Pub>();
+for (const p of rawPubs) {
+  const key = pubDedupKey(p);
+  const existing = seen.get(key);
+  if (!existing) {
+    seen.set(key, p);
+    continue;
+  }
+  // Prefer the published version as the surviving record.
+  const primary =
+    isPreprintVenue(existing.data.venue) && !isPreprintVenue(p.data.venue)
+      ? p
+      : existing;
+  const secondary = primary === existing ? p : existing;
+  const pd = primary.data as Pub["data"];
+  const sd = secondary.data;
+  pd.people = Array.from(new Set([...(pd.people ?? []), ...(sd.people ?? [])]));
+  pd.topics = Array.from(new Set([...(pd.topics ?? []), ...(sd.topics ?? [])]));
+  pd.arxiv = pd.arxiv ?? sd.arxiv;
+  pd.pdf = pd.pdf ?? sd.pdf;
+  pd.code = pd.code ?? sd.code;
+  pd.badge = pd.badge ?? sd.badge;
+  seen.set(key, primary);
+}
+const pubs = Array.from(seen.values());
+
+const years = Array.from(new Set(pubs.map((p) => p.data.year))).sort(
+  (a, b) => b - a,
+);
+const byYear = years.map((y) => ({
+  year: y,
+  items: pubs.filter((p) => p.data.year === y),
+}));
+
+// Research themes drive the filter chips now instead of raw OpenAlex topic
+// strings — the theme taxonomy is curated and sharper. For each paper we
+// precompute the theme slugs it belongs to (via pubMatchesTheme) and emit
+// them as a data attribute on the <li>. The client script then toggles
+// visibility by comparing chip slug to the item's data-pub-themes.
+const themes = (await getCollection("themes"))
+  .filter((t) => !t.data.draft)
+  .sort((a, b) => a.data.order - b.data.order);
+
+// Map each publication (identified by its content-collection slug, since it's
+// stable) to the array of theme slugs it matches.
+const themesByPubSlug = new Map<string, string[]>();
+for (const p of pubs) {
+  const slugs = themes
+    .filter((t) => pubMatchesTheme(p, t.data))
+    .map((t) => t.slug);
+  themesByPubSlug.set(p.slug, slugs);
+}
+
+// Per-theme count for the chip badge — papers the chip would reveal. A
+// single paper can contribute to multiple themes, so these counts sum to
+// more than the total paper count, which is expected.
+const themeCounts = new Map<string, number>(
+  themes.map((t) => [
+    t.slug,
+    pubs.filter((p) => themesByPubSlug.get(p.slug)?.includes(t.slug)).length,
+  ]),
+);
+
+// Bold the PI in the author list on the main publications page. Pull the
+// PI's name (and any aliases) straight from the people collection so this
+// stays in sync if the PI's name changes.
+const allPeople = await getCollection("people");
+const pi = allPeople.find((p) => p.data.role === "PI");
+const piNames = pi
+  ? [
+      pi.data.name.replace(/^(Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s+/, ""),
+      ...(pi.data.aliases ?? []),
+    ]
+  : ["Jonathan M. Baker"];
+
+const lastSynced = syncStatus.lastSynced
+  ? new Date(syncStatus.lastSynced).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  : null;
+---
+
+<BaseLayout
+  title="Publications — The Baker Group"
+  description="Papers, preprints, and artifacts from The Baker Group."
+>
+  <section class="container-page py-16">
+    <h1 class="sr-only">Publications</h1>
+    <div class="mb-8 flex items-center gap-3 flex-wrap text-sm">
+      <span class="chip">Sorted by year, newest first</span>
+      <span class="chip">PI shown in <b class="text-crust-900 dark:text-crust-50 ml-1">bold</b></span>
+      <a class="link-burnt ml-auto" href="/rss.xml">RSS</a>
+    </div>
+
+    {
+      themes.length > 0 && (
+        <div class="mb-10" id="theme-filter-bar">
+          <p class="eyebrow mb-2">Filter by research theme</p>
+          <div class="flex flex-wrap gap-2" id="theme-filters">
+            <button
+              type="button"
+              data-theme=""
+              class="chip chip-active"
+              aria-pressed="true"
+            >
+              All
+              <span class="font-mono text-[10px] opacity-70">{pubs.length}</span>
+            </button>
+            {themes.map((t) => (
+              <button
+                type="button"
+                data-theme={t.slug}
+                class="chip"
+                aria-pressed="false"
+              >
+                {t.data.title}
+                <span class="font-mono text-[10px] opacity-70">
+                  {themeCounts.get(t.slug) ?? 0}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    <div id="pub-list">
+      {
+        byYear.map((group) => (
+          <div class="mb-12" data-year-group>
+            <div class="flex items-baseline gap-4 mb-2">
+              <h2 class="font-serif text-3xl text-crust-900 dark:text-crust-50">
+                {group.year}
+              </h2>
+              <div class="flex-1 h-px bg-crust-200 dark:bg-crust-800" />
+              <span class="text-xs text-crust-600 dark:text-crust-400 font-mono">
+                {group.items.length} paper{group.items.length > 1 ? "s" : ""}
+              </span>
+            </div>
+            <ol class="mt-2">
+              {group.items.map((p) => (
+                <PublicationItem
+                  title={p.data.title}
+                  authors={p.data.authors}
+                  venue={p.data.venue}
+                  year={p.data.year}
+                  pdf={p.data.pdf}
+                  arxiv={p.data.arxiv}
+                  doi={p.data.doi}
+                  code={p.data.code}
+                  highlight={p.data.highlight}
+                  badge={p.data.badge}
+                  boldNames={piNames}
+                  themes={themesByPubSlug.get(p.slug) ?? []}
+                />
+              ))}
+            </ol>
+          </div>
+        ))
+      }
+    </div>
+
+    <p
+      id="pub-empty"
+      class="hidden mt-6 text-sm text-crust-700 dark:text-crust-300 leading-relaxed"
+    >
+      No papers match that theme. Try a different filter or reset to All.
+    </p>
+
+    <div class="mt-8 rounded-2xl border border-crust-200 bg-crust-100/40 p-6 text-sm text-crust-700
+                dark:border-crust-800 dark:bg-crust-900/50 dark:text-crust-300">
+      For a comprehensive and always-current list, see Prof. Baker's
+      <a class="link-burnt" href="https://scholar.google.com/citations?user=87cLl3gAAAAJ">Google Scholar</a>
+      profile. Preprints are available on
+      <a class="link-burnt" href="https://arxiv.org">arXiv</a>.
+    </div>
+
+    {
+      lastSynced && (
+        <p class="mt-6 text-xs font-mono text-crust-500 dark:text-crust-500">
+          Auto-sync last ran {lastSynced}.
+        </p>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<script>
+  // Theme-chip filter. All state lives in the DOM — no framework, no
+  // localStorage. Clicking a chip hides publications whose data-pub-themes
+  // doesn't include the chip's theme slug; empty year groups are hidden too.
+  const chips = document.querySelectorAll<HTMLButtonElement>(
+    "#theme-filters [data-theme]",
+  );
+  const items = document.querySelectorAll<HTMLElement>(
+    "#pub-list [data-pub-themes]",
+  );
+  const yearGroups = document.querySelectorAll<HTMLElement>(
+    "#pub-list [data-year-group]",
+  );
+  const emptyMsg = document.getElementById("pub-empty");
+
+  function applyFilter(theme: string) {
+    let visibleTotal = 0;
+    items.forEach((item) => {
+      const itemThemes = (item.getAttribute("data-pub-themes") || "")
+        .split("|")
+        .filter(Boolean);
+      const show = !theme || itemThemes.includes(theme);
+      item.classList.toggle("hidden", !show);
+      if (show) visibleTotal++;
+    });
+    yearGroups.forEach((g) => {
+      const visible = g.querySelectorAll<HTMLElement>(
+        "[data-pub-themes]:not(.hidden)",
+      );
+      g.classList.toggle("hidden", visible.length === 0);
+    });
+    if (emptyMsg) emptyMsg.classList.toggle("hidden", visibleTotal > 0);
+  }
+
+  chips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const theme = chip.getAttribute("data-theme") || "";
+      chips.forEach((c) => {
+        const isActive = c === chip;
+        c.classList.toggle("chip-active", isActive);
+        c.setAttribute("aria-pressed", String(isActive));
+      });
+      applyFilter(theme);
+    });
+  });
+</script>

@@ -1,0 +1,81 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const courses = [
+  {
+    code: "ECE 312",
+    title: "Software Design and Implementation I",
+    term: "Taught regularly since Fall 2024",
+    level: "Undergraduate",
+    summary:
+      "Problem solving, design, and implementation in imperative programming with C/C++: programming idioms, software design principles like modularity and cohesion, elementary data structures, and asymptotic analysis.",
+    tags: ["Undergrad", "Core"],
+  },
+  {
+    code: "ECE 382V",
+    title: "Topics in Quantum Computing: Quantum Error Correction Theory and Practice",
+    term: "Offered occasionally",
+    level: "Graduate",
+    summary:
+      "Theory and practice of practical quantum error correction, from classical codes and the stabilizer formalism through the surface code, fault tolerance, and current work on topological and qLDPC codes, followed by presentations and discussion of ongoing systems research. Self-contained; open to graduate and advanced undergraduate ECE/CS students with a linear algebra background.",
+    tags: ["Grad", "QEC"],
+  },
+];
+
+---
+
+<BaseLayout
+  title="Teaching — The Baker Group"
+  description="Courses, advising, and resources."
+>
+  <section class="container-page py-16">
+    <h1 class="sr-only">Teaching</h1>
+    <h2 class="font-serif text-2xl text-crust-900 dark:text-crust-50 mb-6">Courses</h2>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      {
+        courses.map((c) => (
+          <article class="card flex flex-col">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="font-mono text-xs text-burnt-600 dark:text-burnt-300">{c.code}</p>
+                <h3 class="mt-1 font-serif text-xl text-crust-900 dark:text-crust-50 leading-snug">{c.title}</h3>
+              </div>
+              <span class="chip">{c.level}</span>
+            </div>
+            <p class="mt-3 text-sm text-crust-700 dark:text-crust-300 leading-relaxed">{c.summary}</p>
+            <div class="mt-auto pt-4 flex items-center justify-between gap-3 text-xs">
+              <span class="text-crust-600 dark:text-crust-400">{c.term}</span>
+              <div class="flex gap-2">
+                {c.tags.map((t) => <span class="chip">{t}</span>)}
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    <h2 class="font-serif text-2xl text-crust-900 dark:text-crust-50 mt-16 mb-4">Independent study</h2>
+    <p class="max-w-2xxl text-crust-700 dark:text-crust-300 leading-relaxed">
+      Our most successful undergraduate students are self-motivated and
+      consistent. Independent work is difficult, but if you are enthusiastic,
+      we are eager to guide you through your project. Be honest with yourself
+      about bandwidth: this work is hard, and it will be a struggle if you
+      are carrying a heavy course load or cannot devote significant time 
+      over a potentially long period to the project.
+    </p>
+
+    <h2 class="font-serif text-2xl text-crust-900 dark:text-crust-50 mt-16 mb-4">Reading group</h2>
+    <p class="max-w-2xxl text-crust-700 dark:text-crust-300 leading-relaxed">
+      We run a weekly reading group on quantum-architecture papers. The
+      meeting time floats around but If you would
+      like to attend, reach out to
+      <a class="link-burnt" href="/people/sayam-sethi">Sayam Sethi</a>.
+    </p>
+
+    <p class="mt-12 max-w-3xl text-sm text-crust-600 dark:text-crust-400 leading-relaxed">
+      Want to talk with Prof. Baker? He meets with students by appointment;
+      <a class="link-burnt" href="mailto:jonathan.baker@austin.utexas.edu">send him an email</a>.
+    </p>
+  </section>
+</BaseLayout>

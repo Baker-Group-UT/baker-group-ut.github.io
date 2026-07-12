@@ -1,0 +1,226 @@
+---
+interface Props {
+  name: string;
+  year?: string;
+  bio?: string;
+  /** Card-only short bio line. Falls back to `bio` if not set. */
+  blurb?: string;
+  image?: string;
+  /** Per-person scale multiplier for the card photo. 1 = no zoom. */
+  imageZoom?: number;
+  /** Vertical image offset in pixels. Negative values raise the portrait. */
+  imageYShift?: number;
+  email?: string;
+  website?: string;
+  github?: string;
+  scholar?: string;
+  initials?: string;
+  /** If present, the card's name block links to /people/<slug>. */
+  slug?: string;
+}
+const {
+  name,
+  year,
+  bio,
+  blurb,
+  image,
+  imageZoom = 1,
+  imageYShift = 0,
+  email,
+  website,
+  github,
+  scholar,
+  initials,
+  slug,
+} = Astro.props;
+
+// Cards are one-liners: collapse any paragraph breaks in a fallback bio.
+const cardBio = (blurb ?? bio)?.replace(/\s+/g, " ").trim();
+
+// Deterministic warm-palette swatch for placeholder avatars.
+const swatches = [
+  "from-butter-200 to-crust-300 dark:from-butter-400 dark:to-crust-700",
+  "from-crust-200 to-burnt-200 dark:from-crust-700 dark:to-burnt-800",
+  "from-burnt-100 to-crust-300 dark:from-burnt-900 dark:to-crust-700",
+  "from-butter-300 to-burnt-200 dark:from-butter-500 dark:to-burnt-800",
+  "from-sage-100 to-crust-200 dark:from-sage-500 dark:to-crust-800",
+];
+const swatch =
+  swatches[
+    [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % swatches.length
+  ];
+const mono = (
+  initials ??
+  name
+    .replace(/^(Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s+/, "")
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+).toUpperCase();
+const href = slug ? `/people/${slug}` : undefined;
+const hasLinks = Boolean(email || website || github || scholar);
+const imageShiftExtent = Math.abs(imageYShift);
+const imageTransform = [
+  imageYShift !== 0 ? `translateY(${imageYShift}px)` : undefined,
+  imageZoom && imageZoom !== 1 ? `scale(${imageZoom})` : undefined,
+]
+  .filter(Boolean)
+  .join(" ");
+const imageStyle = [
+  `height: calc(100% + ${imageShiftExtent}px)`,
+  imageYShift > 0 ? `top: -${imageYShift}px` : "top: 0",
+  imageTransform ? `transform: ${imageTransform}` : undefined,
+  imageTransform ? "transform-origin: center center" : undefined,
+]
+  .filter(Boolean)
+  .join("; ");
+---
+
+<!--
+  "Postcard" layout: a square portrait sits flush on the left side of the
+  card. The card's outer rounded corners (via `.card` + `overflow-hidden`) do
+  the clipping, so the photo's left corners look rounded while the right side
+  keeps the card's own corners. `!p-0` strips `.card`'s default 1.5rem padding
+  so the photo sits edge-to-edge; the text column re-adds its own interior
+  padding so the type isn't crammed against the photo.
+-->
+<article class="card !p-0 overflow-hidden flex items-stretch">
+  <!-- Left: square crop, clipped by this wrapper so image_zoom and
+       image_y_shift cannot spill into the text column. -->
+  <div class="relative w-2/5 shrink-0 self-start aspect-square overflow-hidden">
+    {
+      image ? (
+        href ? (
+          <a
+            href={href}
+            aria-label={`${name}'s profile`}
+            tabindex="-1"
+            class="block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-burnt-500"
+          >
+            <img
+              src={image}
+              alt={`Portrait of ${name}`}
+              class="absolute left-0 w-full object-cover block"
+              style={imageStyle}
+              loading="lazy"
+            />
+          </a>
+        ) : (
+          <img
+            src={image}
+            alt={`Portrait of ${name}`}
+            class="absolute left-0 w-full object-cover block"
+            style={imageStyle}
+            loading="lazy"
+          />
+        )
+      ) : href ? (
+        <a
+          href={href}
+          aria-label={`${name}'s profile`}
+          tabindex="-1"
+          class="block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-burnt-500"
+        >
+          <div
+            class={`h-full w-full bg-gradient-to-br ${swatch}
+                    grid place-items-center font-serif text-3xl text-crust-900 dark:text-crust-50`}
+            aria-hidden="true"
+          >
+            {mono}
+          </div>
+        </a>
+      ) : (
+        <div
+          class={`h-full w-full bg-gradient-to-br ${swatch}
+                  grid place-items-center font-serif text-3xl text-crust-900 dark:text-crust-50`}
+          aria-hidden="true"
+        >
+          {mono}
+        </div>
+      )
+    }
+  </div>
+
+  <!-- Right: padded content area (padding comes back here since the card
+       no longer has it). Name on top, bio middle, links pinned to bottom. -->
+  <div class="flex-1 min-w-0 self-stretch flex flex-col p-6">
+    {
+      href ? (
+        <a href={href} class="group block no-underline">
+          <h3
+            class="font-serif text-xl leading-tight
+                   text-crust-900 dark:text-crust-50
+                   group-hover:text-burnt-700 dark:group-hover:text-burnt-300
+                   transition-colors"
+          >
+            {name}
+          </h3>
+          {
+            year && (
+              <p class="text-xs uppercase tracking-wider text-burnt-600 dark:text-burnt-300 mt-1">
+                {year}
+              </p>
+            )
+          }
+        </a>
+      ) : (
+        <>
+          <h3 class="font-serif text-xl text-crust-900 dark:text-crust-50 leading-tight">
+            {name}
+          </h3>
+          {
+            year && (
+              <p class="text-xs uppercase tracking-wider text-burnt-600 dark:text-burnt-300 mt-1">
+                {year}
+              </p>
+            )
+          }
+        </>
+      )
+    }
+
+    {
+      cardBio && (
+        <p class="mt-3 text-sm text-crust-700 dark:text-crust-300 leading-relaxed line-clamp-3">
+          {cardBio}
+        </p>
+      )
+    }
+
+    {
+      hasLinks && (
+        <ul class="mt-auto pt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+          {email && (
+            <li>
+              <a class="link-burnt" href={`mailto:${email}`}>
+                Email
+              </a>
+            </li>
+          )}
+          {website && (
+            <li>
+              <a class="link-burnt" href={website}>
+                Website
+              </a>
+            </li>
+          )}
+          {github && (
+            <li>
+              <a class="link-burnt" href={github}>
+                GitHub
+              </a>
+            </li>
+          )}
+          {scholar && (
+            <li>
+              <a class="link-burnt" href={scholar}>
+                Scholar
+              </a>
+            </li>
+          )}
+        </ul>
+      )
+    }
+  </div>
+</article>

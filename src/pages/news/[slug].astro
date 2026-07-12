@@ -1,0 +1,60 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("news", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<"news">;
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+const formatted = post.data.date.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+---
+
+<BaseLayout
+  title={`${post.data.title} — The Baker Group`}
+  description={post.data.summary}
+>
+  <article class="container-narrow py-16">
+    <a href="/news" class="inline-flex items-center gap-2 text-sm link-burnt">
+      <span aria-hidden="true">&larr;</span>
+      Back to news
+    </a>
+
+    <header class="mt-6">
+      <div class="flex items-center gap-3 text-sm">
+        <time datetime={post.data.date.toISOString()} class="text-crust-600 dark:text-crust-400">
+          {formatted}
+        </time>
+        {post.data.tag && <span class="chip">{post.data.tag}</span>}
+      </div>
+      <h1 class="mt-4 font-serif text-4xl sm:text-5xl tracking-tight text-balance
+                 text-crust-900 dark:text-crust-50">
+        {post.data.title}
+      </h1>
+      {
+        post.data.summary && (
+          <p class="mt-4 text-lg text-crust-700 dark:text-crust-300 text-pretty">{post.data.summary}</p>
+        )
+      }
+    </header>
+
+    <hr class="my-10 border-crust-200 dark:border-crust-800" />
+
+    <div class="prose dark:prose-invert max-w-none font-sans">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

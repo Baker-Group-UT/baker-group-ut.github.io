@@ -1,0 +1,287 @@
+@import "@fontsource-variable/lora/index.css";
+@import "@fontsource-variable/inter/index.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Semantic tokens ----------
+   The palette is driven by CSS variables so that the :root / .dark split
+   owns the dark-mode story for cards, dividers, buttons, shadows, and the
+   subtle background pattern. Pages still use Tailwind `dark:` variants
+   when they need something bespoke (gradients, colored CTAs, etc.).
+*/
+@layer base {
+  :root {
+    /* surfaces */
+    --bg:         250 246 236;   /* crust-50  — page bg */
+    --bg-elev:    245 235 214;   /* crust-100 — subtly raised bands */
+    --surface:    255 255 255;   /* card interior, before alpha */
+    --surface-alpha: 0.80;
+
+    /* text */
+    --text:       45 24 16;      /* crust-900 */
+    --text-muted: 74 46 23;      /* crust-800 */
+    --text-soft:  107 67 32;     /* crust-700 */
+    --text-dim:   139 90 43;     /* crust-600 */
+
+    /* borders */
+    --border:     236 217 179;   /* crust-200 */
+    --border-soft:250 235 214;   /* crust-100 */
+
+    /* accent */
+    --accent:     191 87 0;      /* burnt */
+    --accent-fg:  250 246 236;   /* text on accent */
+    --accent-soft:251 239 226;   /* burnt-50 */
+
+    /* background pattern dot (flour grain) */
+    --dot-color:  107 67 32;
+    --dot-alpha:  0.05;
+
+    /* shadow tint */
+    --shadow-tint: 75 46 23;
+    --shadow-alpha-sm: 0.08;
+    --shadow-alpha-md: 0.18;
+    --shadow-alpha-lg: 0.28;
+  }
+
+  .dark {
+    /* Bakery-at-night: deep espresso base, warm cream text, caramel accents. */
+    --bg:         28 20 14;      /* near-black warm brown */
+    --bg-elev:    40 28 20;
+    --surface:    50 34 22;
+    --surface-alpha: 0.65;
+
+    --text:       245 235 214;   /* crust-100 */
+    --text-muted: 223 190 134;   /* between crust-200 and crust-300 */
+    --text-soft:  201 154 90;    /* crust-400 */
+    --text-dim:   176 122 58;    /* crust-500 */
+
+    --border:     74 46 23;      /* crust-800 */
+    --border-soft:58 36 20;
+
+    --accent:     226 137 71;    /* burnt-300, brighter for legibility */
+    --accent-fg:  28 20 14;
+    --accent-soft:85 38 0;       /* burnt-800 */
+
+    --dot-color:  223 190 134;
+    --dot-alpha:  0.04;
+
+    --shadow-tint: 0 0 0;
+    --shadow-alpha-sm: 0.35;
+    --shadow-alpha-md: 0.55;
+    --shadow-alpha-lg: 0.7;
+  }
+}
+
+/* ---------- Base ---------- */
+@layer base {
+  html {
+    background-color: rgb(var(--bg));
+    color: rgb(var(--text));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: "Inter Variable", Inter, system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    line-height: 1.6;
+    background-image: radial-gradient(
+      rgb(var(--dot-color) / var(--dot-alpha)) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+    background-attachment: fixed;
+    transition:
+      background-color 220ms ease,
+      color 220ms ease;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: "Lora Variable", Lora, Georgia, serif;
+    letter-spacing: -0.015em;
+    color: rgb(var(--text));
+  }
+
+  h1 { font-weight: 500; }
+  h2 { font-weight: 500; }
+  h3 { font-weight: 500; }
+
+  a {
+    color: rgb(var(--accent));
+    text-decoration: none;
+    text-underline-offset: 3px;
+    transition: color 150ms ease;
+  }
+  a:hover { text-decoration: underline; }
+
+  ::selection {
+    background-color: rgb(var(--accent) / 0.35);
+    color: rgb(var(--text));
+  }
+
+  /* Disable the swap animation when a user prefers reduced motion. */
+  @media (prefers-reduced-motion: reduce) {
+    body { transition: none; }
+  }
+}
+
+/* ---------- Components ---------- */
+@layer components {
+  .container-page {
+    @apply mx-auto max-w-6xl px-6 sm:px-8;
+  }
+
+  .container-narrow {
+    @apply mx-auto max-w-3xl px-6 sm:px-8;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: rgb(var(--accent));
+  }
+
+  .section-title {
+    @apply font-serif text-3xl sm:text-4xl;
+    color: rgb(var(--text));
+  }
+
+  .card {
+    background-color: rgb(var(--surface) / var(--surface-alpha));
+    border: 1px solid rgb(var(--border) / 0.8);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 2px rgb(var(--shadow-tint) / var(--shadow-alpha-sm));
+    transition:
+      box-shadow 300ms ease,
+      background-color 220ms ease,
+      border-color 220ms ease;
+    backdrop-filter: saturate(1.05);
+  }
+  .card:hover {
+    box-shadow: 0 6px 20px -6px rgb(var(--shadow-tint) / var(--shadow-alpha-md));
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    background-color: rgb(var(--surface) / 0.7);
+    border: 1px solid rgb(var(--border));
+    color: rgb(var(--text-soft));
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  }
+  button.chip {
+    cursor: pointer;
+  }
+  button.chip:hover {
+    color: rgb(var(--text));
+    border-color: rgb(var(--accent) / 0.55);
+  }
+  .chip-active,
+  button.chip.chip-active {
+    background-color: rgb(var(--accent) / 0.12);
+    border-color: rgb(var(--accent) / 0.6);
+    color: rgb(var(--accent));
+  }
+
+  .link-burnt {
+    color: rgb(var(--accent));
+    text-decoration: underline;
+    text-decoration-color: rgb(var(--accent) / 0.45);
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+    transition: color 150ms ease, text-decoration-color 150ms ease;
+  }
+  .link-burnt:hover {
+    color: rgb(var(--accent));
+    text-decoration-color: rgb(var(--accent));
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: rgb(var(--accent));
+    color: rgb(var(--accent-fg));
+    box-shadow: 0 6px 20px -6px rgb(var(--shadow-tint) / var(--shadow-alpha-md));
+    transition: background-color 150ms ease, transform 150ms ease;
+  }
+  .btn-primary:hover {
+    filter: brightness(0.95);
+    text-decoration: none;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: rgb(var(--surface) / 0.6);
+    border: 1px solid rgb(var(--border));
+    color: rgb(var(--text-muted));
+    transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
+  }
+  .btn-ghost:hover {
+    border-color: rgb(var(--accent));
+    color: rgb(var(--accent));
+    text-decoration: none;
+  }
+
+  .divider-wheat {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgb(var(--text-dim) / 0.25),
+      transparent
+    );
+  }
+
+  .wheat-line::before {
+    content: "";
+    display: inline-block;
+    width: 36px;
+    height: 1px;
+    margin-right: 0.75rem;
+    vertical-align: middle;
+    background: rgb(var(--accent));
+    opacity: 0.7;
+  }
+
+  /* Theme toggle — sun/moon crossfade. The `.dark` sun icon fades in only
+     when `.dark` is on <html>. */
+  .theme-toggle-icon-sun { opacity: 0; transform: rotate(-90deg) scale(0.6); }
+  .theme-toggle-icon-moon { opacity: 1; transform: rotate(0) scale(1); }
+  .dark .theme-toggle-icon-sun { opacity: 1; transform: rotate(0) scale(1); }
+  .dark .theme-toggle-icon-moon { opacity: 0; transform: rotate(90deg) scale(0.6); }
+  .theme-toggle-icon-sun,
+  .theme-toggle-icon-moon {
+    transition: opacity 200ms ease, transform 300ms ease;
+    transform-origin: center;
+  }
+}
+
+/* ---------- Utility ---------- */
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .text-pretty  { text-wrap: pretty; }
+}

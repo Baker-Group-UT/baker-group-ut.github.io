@@ -1,0 +1,199 @@
+---
+const pathname = Astro.url.pathname.replace(/\/$/, "") || "/";
+
+const nav = [
+  { href: "/research", label: "Research" },
+  { href: "/publications", label: "Publications" },
+  { href: "/people", label: "People" },
+  { href: "/news", label: "News" },
+  { href: "/teaching", label: "Teaching" },
+  { href: "/join", label: "Join" },
+];
+
+const isActive = (href: string) =>
+  href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
+---
+
+<header
+  class="sticky top-0 z-40 border-b border-crust-200/70
+         bg-crust-50/85 backdrop-blur-md
+         dark:border-crust-800/80 dark:bg-crust-900/85
+         transition-colors duration-200"
+>
+  <div class="container-page flex h-16 items-center justify-between gap-6">
+    <a href="/" class="group flex items-center gap-3 no-underline">
+      <!-- Little loaf mark -->
+      <span
+        class="grid h-9 w-9 place-items-center rounded-full
+               bg-gradient-to-br from-butter-300 via-crust-300 to-crust-600
+               shadow-warm-sm ring-1 ring-crust-600/20
+               dark:ring-crust-700 dark:from-butter-400 dark:via-crust-500 dark:to-crust-800"
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 24 24" class="h-4 w-4 text-crust-900 dark:text-crust-50" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <path d="M4 14 Q8 10 12 14" />
+          <path d="M8 12 Q12 8 16 12" />
+          <path d="M12 14 Q16 10 20 14" />
+        </svg>
+      </span>
+      <span class="leading-tight">
+        <span class="block font-serif text-lg font-medium text-crust-900 dark:text-crust-50 group-hover:text-burnt-700 dark:group-hover:text-burnt-300 transition-colors">
+          The Baker Group
+        </span>
+        <span class="block text-xs uppercase tracking-[0.18em] text-crust-600 dark:text-crust-400">
+          UT Austin &middot; Quantum Architecture
+        </span>
+      </span>
+    </a>
+
+    <div class="flex items-center gap-1">
+      <nav aria-label="Primary" class="hidden md:flex items-center gap-1">
+        {
+          nav.map((item) => (
+            <a
+              href={item.href}
+              class:list={[
+                "rounded-full px-3 py-1.5 text-sm font-medium transition-colors no-underline",
+                isActive(item.href)
+                  ? "bg-burnt-50 text-burnt-700 dark:bg-burnt-900/40 dark:text-burnt-200"
+                  : "text-crust-700 hover:bg-crust-100 hover:text-crust-900 dark:text-crust-300 dark:hover:bg-crust-800 dark:hover:text-crust-50",
+              ]}
+              aria-current={isActive(item.href) ? "page" : undefined}
+            >
+              {item.label}
+            </a>
+          ))
+        }
+      </nav>
+
+      <!-- Theme toggle -->
+      <button
+        type="button"
+        data-theme-toggle
+        class="theme-toggle ml-1 grid h-9 w-9 place-items-center rounded-full
+               border border-crust-200 bg-white/60 text-crust-700
+               hover:border-burnt-400 hover:text-burnt-700
+               dark:border-crust-700 dark:bg-crust-800/60 dark:text-crust-200
+               dark:hover:border-burnt-400 dark:hover:text-burnt-300
+               transition-colors"
+        aria-label="Toggle dark mode"
+        aria-pressed="false"
+        title="Toggle dark mode"
+      >
+        <span class="relative block h-4 w-4" aria-hidden="true">
+          <!-- Moon (shown in light mode) -->
+          <svg
+            viewBox="0 0 24 24"
+            class="theme-toggle-icon-moon absolute inset-0 h-full w-full"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" />
+          </svg>
+          <!-- Sun (shown in dark mode) -->
+          <svg
+            viewBox="0 0 24 24"
+            class="theme-toggle-icon-sun absolute inset-0 h-full w-full"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          </svg>
+        </span>
+      </button>
+
+      <!-- Mobile nav toggle -->
+      <details class="md:hidden relative">
+        <summary
+          class="list-none cursor-pointer rounded-full border border-crust-300
+                 bg-white/60 px-3 py-1.5 text-sm font-medium text-crust-800
+                 dark:border-crust-700 dark:bg-crust-800/60 dark:text-crust-100"
+        >
+          Menu
+        </summary>
+        <div
+          class="absolute right-0 mt-2 w-56 rounded-2xl border border-crust-200
+                 bg-crust-50 p-2 shadow-warm-lg
+                 dark:border-crust-700 dark:bg-crust-800"
+        >
+          {
+            nav.map((item) => (
+              <a
+                href={item.href}
+                class:list={[
+                  "block rounded-xl px-3 py-2 text-sm no-underline",
+                  isActive(item.href)
+                    ? "bg-burnt-50 text-burnt-700 dark:bg-burnt-900/40 dark:text-burnt-200"
+                    : "text-crust-800 hover:bg-crust-100 dark:text-crust-100 dark:hover:bg-crust-700",
+                ]}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Keep every toggle button on the page in sync and persist the choice.
+  const STORAGE_KEY = "theme";
+
+  function currentTheme(): "dark" | "light" {
+    return document.documentElement.classList.contains("dark") ? "dark" : "light";
+  }
+
+  function setTheme(next: "dark" | "light", persist = true) {
+    const root = document.documentElement;
+    root.classList.toggle("dark", next === "dark");
+    if (persist) {
+      try {
+        localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        /* ignore storage failures */
+      }
+    }
+    // Sync aria-pressed across all toggles.
+    document
+      .querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")
+      .forEach((btn) => {
+        btn.setAttribute("aria-pressed", String(next === "dark"));
+      });
+  }
+
+  function bindToggles() {
+    document
+      .querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")
+      .forEach((btn) => {
+        if (btn.dataset.bound === "1") return;
+        btn.dataset.bound = "1";
+        btn.addEventListener("click", () => {
+          setTheme(currentTheme() === "dark" ? "light" : "dark");
+        });
+      });
+    // Initialize aria-pressed to reflect the pre-render script's decision.
+    setTheme(currentTheme(), false);
+  }
+
+  bindToggles();
+
+  // Follow system changes only when the user hasn't made an explicit choice.
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  mq.addEventListener("change", (e) => {
+    try {
+      if (localStorage.getItem(STORAGE_KEY)) return;
+    } catch {
+      /* ignore */
+    }
+    setTheme(e.matches ? "dark" : "light", false);
+  });
+</script>

@@ -1,0 +1,130 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Hero from "@components/Hero.astro";
+import NewsCard from "@components/NewsCard.astro";
+import { getCollection } from "astro:content";
+
+const latestNews = (await getCollection("news", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+
+const themes = [
+  {
+    title: "Logical compilation",
+    description:
+      "Code-aware compilation for logical qubits: Pauli-based computation, qLDPC mappings, Iceberg patches, and the software choices that change program failure rates.",
+  },
+  {
+    title: "Fault-tolerant architectures",
+    description:
+      "Architectural studies of neutral-atom arrays, QCCDs, generalized-bicycle codes, and other designs where connectivity, movement, and code structure matter.",
+  },
+  {
+    title: "Scheduling and control",
+    description:
+      "Realtime schedules for error correction, logical memory, ion shuttling, and atom movement under the timing constraints of a physical machine.",
+  },
+  {
+    title: "Calibration and evaluation",
+    description:
+      "Methods for detecting drift, recalibrating while error correction continues, and evaluating systems with assumptions that other groups can inspect.",
+  },
+];
+---
+
+<BaseLayout>
+  <Hero />
+
+  <!-- Research themes -->
+  <section class="border-y border-crust-200/70 bg-crust-100/40
+                  dark:border-crust-800/70 dark:bg-crust-900/40">
+    <div class="container-page py-20">
+      <div class="max-w-3xl">
+        <p class="eyebrow wheat-line">What we study</p>
+        <h2 class="mt-3 section-title text-balance">
+          Implementing fault tolerance on real machines.
+        </h2>
+        <p class="mt-4 text-crust-700 dark:text-crust-300 text-lg leading-relaxed text-pretty">
+          We study how to make quantum error correction work in practice:
+          mapping logical operations onto hardware, scheduling movement and
+          control, and keeping decoding and calibration in step with the
+          code while the machine runs.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          themes.map((t) => (
+            <div class="card h-full">
+              <h3 class="font-serif text-lg text-crust-900 dark:text-crust-50">{t.title}</h3>
+              <p class="mt-2 text-sm text-crust-700 dark:text-crust-300 leading-relaxed">{t.description}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-10">
+        <a href="/research" class="link-burnt text-sm">
+          See our research areas in depth &rarr;
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- CTA -->
+  <section class="container-page py-20">
+
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br
+                from-crust-200 via-butter-100 to-burnt-100 p-10 sm:p-14 shadow-warm-lg
+                dark:from-crust-800 dark:via-crust-900 dark:to-burnt-900/60">
+      <div class="max-w-2xl">
+        <p class="eyebrow">Prospective students &amp; collaborators</p>
+        <h2 class="mt-2 font-serif text-3xl sm:text-4xl text-crust-900 dark:text-crust-50 text-balance">
+          We are looking for students!
+        </h2>
+        <p class="mt-4 text-crust-800 dark:text-crust-200">
+          We are recruiting PhD students and often work with undergraduate
+          researchers. Much of our work is that of computer architects and
+          scientists, though backgrounds in engineering, physics, computer
+          science, or math are likely good fits.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="/join" class="btn-primary">Openings &amp; how to apply</a>
+          <a href="/publications" class="btn-ghost">Read our papers</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest news -->
+  <section class="container-page pb-24">
+    <div class="flex items-end justify-between gap-6 flex-wrap">
+      <div>
+        <p class="eyebrow wheat-line">Latest</p>
+        <h2 class="mt-3 section-title">From the group</h2>
+      </div>
+      <a href="/news" class="link-burnt text-sm">All news &rarr;</a>
+    </div>
+
+    {
+      latestNews.length === 0 ? (
+        <p class="mt-10 text-crust-700 dark:text-crust-300">
+          No news yet — check back soon.
+        </p>
+      ) : (
+        <div class="mt-10 grid gap-5 md:grid-cols-3">
+          {latestNews.map((post) => (
+            <NewsCard
+              title={post.data.title}
+              date={post.data.date}
+              summary={post.data.summary}
+              tag={post.data.tag}
+              href={`/news/${post.slug}`}
+            />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

@@ -1,0 +1,31 @@
+---
+interface Props {
+  title: string;
+  date: Date;
+  summary?: string;
+  href: string;
+  tag?: string;
+}
+const { title, date, summary, href, tag } = Astro.props;
+const formatted = date.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+});
+---
+
+<article class="card group flex flex-col gap-3">
+  <div class="flex items-center gap-3 text-xs">
+    <time datetime={date.toISOString()} class="text-crust-600 dark:text-crust-400">{formatted}</time>
+    {tag && <span class="chip">{tag}</span>}
+  </div>
+  <h3 class="font-serif text-xl leading-snug text-crust-900 dark:text-crust-50
+             group-hover:text-burnt-700 dark:group-hover:text-burnt-300 transition-colors">
+    <a href={href} class="no-underline">{title}</a>
+  </h3>
+  {summary && <p class="text-sm leading-relaxed text-crust-700 dark:text-crust-300">{summary}</p>}
+  <a href={href} class="mt-auto inline-flex items-center gap-1 text-sm link-burnt">
+    Read more
+    <span aria-hidden="true">&rarr;</span>
+  </a>
+</article>

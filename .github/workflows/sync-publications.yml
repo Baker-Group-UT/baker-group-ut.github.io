@@ -1,0 +1,57 @@
+name: Sync publications from OpenAlex
+
+# Runs on the 1st and 15th of every month at 06:00 UTC (cron can't express
+# a true "every two weeks"), and on-demand via the "Run workflow" button in
+# the Actions tab (workflow_dispatch) or `gh workflow run
+# sync-publications.yml` from the command line.
+on:
+  schedule:
+    - cron: "0 6 1,15 * *"
+  workflow_dispatch:
+
+# Never let two sync runs race each other (e.g. a manual run overlapping
+# the scheduled one) — the second would fail to push.
+concurrency:
+  group: sync-publications
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Run publication sync
+        env:
+          # OpenAlex asks that you identify yourself via a contact email in
+          # the "polite pool" query param. Set OPENALEX_MAILTO as a repo
+          # secret (or environment variable) to override the default below.
+          OPENALEX_MAILTO: ${{ secrets.OPENALEX_MAILTO || 'jonathan.baker@austin.utexas.edu' }}
+        run: npm run sync-publications
+
+      - name: Commit changes
+        run: |
+          git config user.name "publication-sync[bot]"
+          git config user.email "publication-sync[bot]@users.noreply.github.com"
+          git add src/content/publications src/data/sync-status.json
+          # sync-status.json changes every run (it carries the run timestamp),
+          # so gate the commit on actual publication changes to avoid a
+          # pointless commit every month.
+          if git diff --staged --quiet -- src/content/publications; then
+            echo "No publication changes to commit."
+          else
+            git commit -m "chore(sync): update publications from OpenAlex"
+            git push
+          fi

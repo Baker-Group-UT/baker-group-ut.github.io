@@ -1,0 +1,118 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import PersonCard from "@components/PersonCard.astro";
+import PIFeatureCard from "@components/PIFeatureCard.astro";
+import { getCollection } from "astro:content";
+
+const people = await getCollection("people");
+
+const groupOrder = [
+  "PI",
+  "Postdoc",
+  "PhD Student",
+  "Masters Student",
+  "Undergraduate",
+  "Visiting Researcher",
+  "External Member",
+  "Staff",
+  "Alumni",
+] as const;
+
+const studentYearRank = (year?: string) => {
+  const match = year?.match(/^(\d+)/);
+  return match ? Number(match[1]) : 0;
+};
+
+const byRole = groupOrder.map((role) => ({
+  role,
+  members: people
+    .filter((p) => p.data.role === role)
+    .sort((a, b) => {
+      if (role === "PhD Student") {
+        const seniority = studentYearRank(b.data.year) - studentYearRank(a.data.year);
+        if (seniority !== 0) return seniority;
+      }
+
+      return a.data.order - b.data.order;
+    }),
+})).filter((g) => g.members.length > 0);
+
+const rolePlural: Record<string, string> = {
+  "PI": "Principal Investigator",
+  "Postdoc": "Postdocs",
+  "PhD Student": "PhD Students",
+  "Masters Student": "Masters Students",
+  "Undergraduate": "Undergraduates",
+  "Staff": "Staff",
+  "Visiting Researcher": "Visiting Researchers",
+  "External Member": "External Members",
+  "Alumni": "Alumni",
+};
+---
+
+<BaseLayout
+  title="People — The Baker Group"
+  description="Members of The Baker Group at UT Austin."
+>
+  <h1 class="sr-only">People</h1>
+  <section class="container-page py-16 space-y-16">
+    {
+      byRole.map((group) => (
+        <div>
+          <h2 class="font-serif text-2xl text-crust-900 dark:text-crust-50 mb-6 flex items-baseline gap-3">
+            {rolePlural[group.role]}
+            {
+              /* There's always exactly one PI; the "1" beside the heading is
+                 just visual clutter, so only show a count for roles with
+                 multiple members. */
+              group.role !== "PI" && (
+                <span class="text-xs font-sans font-medium text-crust-500 dark:text-crust-400">
+                  {group.members.length}
+                </span>
+              )
+            }
+          </h2>
+          {
+            /* The PI gets a single full-width feature card instead of the
+               3-up avatar grid used for everyone else. */
+            group.role === "PI" ? (
+              group.members.map((p) => (
+                <PIFeatureCard
+                  slug={p.slug}
+                  name={p.data.name}
+                  bio={p.data.bio}
+                  image={p.data.image}
+                  imageZoom={p.data.image_zoom}
+                  imageYShift={p.data.image_y_shift}
+                  email={p.data.email}
+                  website={p.data.website}
+                  github={p.data.github}
+                  scholar={p.data.scholar}
+                />
+              ))
+            ) : (
+              <div class="grid gap-5 sm:grid-cols-2">
+                {group.members.map((p) => (
+                  <PersonCard
+                    slug={p.slug}
+                    name={p.data.name}
+                    year={p.data.year}
+                    bio={p.data.bio}
+                    blurb={p.data.blurb}
+                    image={p.data.image}
+                    imageZoom={p.data.image_zoom}
+                    imageYShift={p.data.image_y_shift}
+                    email={p.data.email}
+                    website={p.data.website}
+                    github={p.data.github}
+                    scholar={p.data.scholar}
+                  />
+                ))}
+              </div>
+            )
+          }
+        </div>
+      ))
+    }
+  </section>
+</BaseLayout>

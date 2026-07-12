@@ -1,0 +1,157 @@
+---
+// The home page hero.
+import { getCollection } from "astro:content";
+import { dedupePublications } from "@lib/publications";
+
+// Live stats for the <dl> under the intro copy — computed at build time so
+// they never go stale as content changes.
+const paperCount = dedupePublications(
+  await getCollection("publications"),
+).length;
+const phdCount = (await getCollection("people")).filter(
+  (p) => p.data.role === "PhD Student",
+).length;
+
+// Photos the hero cycles through with a slow crossfade. Each entry has its
+// own crop window into its source image, as fractions of the original
+// (0–1): `left`/`top` position the window's top-left corner; `width` sets
+// the zoom (smaller = more zoomed in). The window's height follows from
+// the frame's aspect ratio. `aspect` is the source image width / height.
+// Add or remove entries freely — with a single entry the cycling is off.
+const photos = [
+  {
+    src: "/images/people/group_0.JPG",
+    aspect: 5184 / 3456,
+    crop: { left: 0.2015, top: 0.307, width: 0.616 },
+  },
+  {
+    src: "/images/people/group_1.jpeg",
+    aspect: 4032 / 3024,
+    crop: { left: 0.05, top: 0.15, width: .7 },
+  },
+  {
+    src: "/images/people/group_2.JPG",
+    aspect: 5184 / 3456,
+    crop: { left: .1, top: 0, width: .88 },
+  },
+];
+
+const FRAME_ASPECT = 4 / 3; // keep in sync with aspect-[4/3] on the frame
+
+// Per-photo CSS placing the crop window inside the frame.
+function cropStyle(p: (typeof photos)[number]): string {
+  const w = 100 / p.crop.width;
+  const h = (w * FRAME_ASPECT) / p.aspect;
+  return `width:${w}%; height:${h}%; left:${-p.crop.left * w}%; top:${-p.crop.top * h}%;`;
+}
+---
+
+<section class="relative overflow-hidden">
+  <!-- Background flourish -->
+  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+    <div class="absolute -top-40 -right-32 h-[28rem] w-[28rem] rounded-full
+                bg-burnt-100/50 blur-3xl
+                dark:bg-burnt-900/40"></div>
+    <div class="absolute -bottom-40 -left-24 h-[22rem] w-[22rem] rounded-full
+                bg-butter-100/70 blur-3xl
+                dark:bg-butter-500/10"></div>
+  </div>
+
+  <div class="container-page pt-16 pb-20 sm:pt-24 sm:pb-28">
+    <div class="grid gap-12 lg:gap-8 lg:grid-cols-[1.6fr_1fr] items-center">
+      <div>
+        <p class="eyebrow wheat-line">UT Austin &middot; Electrical and Computer Engineering</p>
+
+        <h1 class="mt-4 font-serif text-4xl sm:text-5xl leading-[1.05] tracking-tight text-balance">
+          Architecture for fault-tolerant quantum computers.
+        </h1>
+
+        <p class="mt-6 max-w-xl text-lg leading-relaxed text-crust-700 dark:text-crust-300 text-pretty">
+          The Baker Group studies how error-corrected quantum computers should
+          be compiled, scheduled, and run. We focus on the questions
+          that appear once qubits have to run on real hardware.
+        </p>
+
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+          <a href="/research" class="btn-primary">
+            Our research
+            <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M4 10h12M12 6l4 4-4 4" />
+            </svg>
+          </a>
+          <a href="/join" class="btn-ghost">Join the group</a>
+        </div>
+
+        <dl class="mt-12 flex divide-x divide-crust-200 dark:divide-crust-700">
+          <div class="pr-6 text-center">
+            <dt class="text-xs uppercase tracking-wider text-crust-600 dark:text-crust-400">Since</dt>
+            <dd class="mt-1 font-serif text-2xl text-crust-900 dark:text-crust-50">2023</dd>
+          </div>
+          <div class="px-6 text-center">
+            <dt class="text-xs uppercase tracking-wider text-crust-600 dark:text-crust-400">PhD students</dt>
+            <dd class="mt-1 font-serif text-2xl text-crust-900 dark:text-crust-50">{phdCount}</dd>
+          </div>
+          <div class="pl-6 text-center">
+            <dt class="text-xs uppercase tracking-wider text-crust-600 dark:text-crust-400">Papers</dt>
+            <dd class="mt-1 font-serif text-2xl text-crust-900 dark:text-crust-50">{paperCount}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Group photo. Styled like the portrait in PIFeatureCard: a
+           rounded-rectangle frame with a subtle ring. The original photo is
+           oversized and offset inside the frame according to the `crop`
+           values in the frontmatter above. -->
+      <!-- On large screens the photo bleeds off the right edge of the
+           viewport like a "side card": rounded on the left, clipped flush
+           on the right. The width calc extends the wrapper past its grid
+           column by exactly the container's right inset (the centered
+           max-w-6xl leftover plus the px-8 padding), so it always kisses
+           the viewport edge. Below lg it's a normal fully-rounded card. -->
+      <div
+        class="relative mx-auto w-full aspect-[4/3] rounded-2xl overflow-hidden
+               ring-1 ring-crust-600/20 shadow-warm-lg
+               dark:ring-crust-100/15
+               lg:w-[calc(100%_+_max((100vw_-_72rem)/2,0px)_+_2rem)]
+               lg:rounded-l-3xl lg:rounded-r-none"
+      >
+        {
+          photos.map((p, i) => (
+            <img
+              src={p.src}
+              alt={i === 0 ? "The Baker Group" : ""}
+              aria-hidden={i === 0 ? undefined : "true"}
+              data-hero-photo
+              class:list={[
+                "absolute max-w-none block transition-opacity duration-1000 ease-in-out",
+                i === 0 ? "opacity-100" : "opacity-0",
+              ]}
+              style={cropStyle(p)}
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Slow crossfade through the hero photos. Skipped when there's only one
+  // photo or the visitor prefers reduced motion.
+  const HOLD_MS = 6000;
+  const imgs = document.querySelectorAll<HTMLImageElement>("[data-hero-photo]");
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  if (imgs.length > 1 && !reduceMotion) {
+    let current = 0;
+    setInterval(() => {
+      const next = (current + 1) % imgs.length;
+      imgs[current].classList.replace("opacity-100", "opacity-0");
+      imgs[next].classList.replace("opacity-0", "opacity-100");
+      current = next;
+    }, HOLD_MS);
+  }
+</script>

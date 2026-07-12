@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="loaf" cx="50%" cy="55%" r="55%">
+      <stop offset="0%" stop-color="#F4C430"/>
+      <stop offset="65%" stop-color="#C99A5A"/>
+      <stop offset="100%" stop-color="#8B5A2B"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#FAF6EC"/>
+  <!-- a little round loaf -->
+  <ellipse cx="32" cy="38" rx="22" ry="16" fill="url(#loaf)" stroke="#6B4320" stroke-width="1.5"/>
+  <!-- scored slashes on top -->
+  <path d="M18 30 Q24 26 30 30" fill="none" stroke="#6B4320" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M28 28 Q34 24 40 28" fill="none" stroke="#6B4320" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M38 30 Q44 26 48 30" fill="none" stroke="#6B4320" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- burnt orange accent (UT) -->
+  <circle cx="48" cy="18" r="4" fill="#BF5700"/>
+</svg>

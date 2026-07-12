@@ -1,0 +1,225 @@
+---
+/**
+ * Full-width feature card for the PI at the top of /people. Different from
+ * the standard PersonCard (which targets a 3-up grid of circular avatars):
+ *
+ *   - Spans the full column width as a single rectangular card.
+ *   - Left half is a portrait-aspect rounded-rectangle photo with the PI's
+ *     name + role stacked underneath.
+ *   - Right half is the bio copy with contact / profile links at the
+ *     bottom.
+ *   - On narrow screens the two halves stack vertically, photo on top.
+ */
+interface Props {
+  name: string;
+  bio?: string;
+  image?: string;
+  /** Per-person scale multiplier for the feature photo. 1 = no zoom. */
+  imageZoom?: number;
+  /** Vertical image offset in pixels. Negative values raise the portrait. */
+  imageYShift?: number;
+  email?: string;
+  website?: string;
+  github?: string;
+  scholar?: string;
+  /** If provided, name + photo link through to /people/<slug>. */
+  slug?: string;
+}
+const {
+  name,
+  bio,
+  image,
+  imageZoom = 1,
+  imageYShift = 0,
+  email,
+  website,
+  github,
+  scholar,
+  slug,
+} = Astro.props;
+
+// Same anti-gap trick as PersonCard: oversize the image vertically by the
+// shift extent and anchor it so the extra hangs opposite the shift
+// direction. The translate then slides within that slack, so the frame
+// edge (white space) is never exposed — the shift reframes the crop
+// instead of moving a crop that already fits the frame exactly.
+const imageShiftExtent = Math.abs(imageYShift);
+const imageTransform = [
+  imageYShift !== 0 ? `translateY(${imageYShift}px)` : undefined,
+  imageZoom && imageZoom !== 1 ? `scale(${imageZoom})` : undefined,
+]
+  .filter(Boolean)
+  .join(" ");
+const imageStyle = [
+  `height: calc(100% + ${imageShiftExtent}px)`,
+  imageYShift > 0 ? `top: -${imageYShift}px` : "top: 0",
+  imageTransform ? `transform: ${imageTransform}` : undefined,
+  imageTransform ? "transform-origin: center center" : undefined,
+]
+  .filter(Boolean)
+  .join("; ");
+
+// Placeholder-avatar palette, kept in lockstep with PersonCard so the PI's
+// fallback looks like a bigger sibling of the rest of the grid below.
+const swatches = [
+  "from-butter-200 to-crust-300 dark:from-butter-400 dark:to-crust-700",
+  "from-crust-200 to-burnt-200 dark:from-crust-700 dark:to-burnt-800",
+  "from-burnt-100 to-crust-300 dark:from-burnt-900 dark:to-crust-700",
+  "from-butter-300 to-burnt-200 dark:from-butter-500 dark:to-burnt-800",
+  "from-sage-100 to-crust-200 dark:from-sage-500 dark:to-crust-800",
+];
+const swatch =
+  swatches[
+    [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % swatches.length
+  ];
+const initials = name
+  .replace(/^(Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s+/, "")
+  .split(" ")
+  .map((p) => p[0])
+  .slice(0, 2)
+  .join("")
+  .toUpperCase();
+const href = slug ? `/people/${slug}` : undefined;
+const hasLinks = Boolean(email || website || github || scholar);
+
+// Blank lines in the frontmatter `bio` (literal \n\n inside the quoted YAML
+// string) become paragraph breaks — HTML would otherwise collapse the
+// newlines to spaces inside a single <p>.
+const bioParagraphs = (bio ?? "")
+  .split(/\n\s*\n/)
+  .map((s) => s.trim())
+  .filter(Boolean);
+---
+
+<article
+  class="card p-6 sm:p-8 md:flex md:items-stretch md:gap-8"
+>
+  <!-- Left: portrait + name + role. Pinned width on desktop so the bio
+       gets all remaining space; stacks on top on mobile. -->
+  <div class="md:w-2/5 md:shrink-0 flex flex-col">
+    {
+      /* Rounded + clipped wrapper: keeps the rounded corners visible even
+         when the inner <img> is scaled past the frame via image_zoom. */
+      image ? (
+        href ? (
+          <a
+            href={href}
+            aria-label={`${name}'s profile`}
+            class="block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-burnt-500"
+          >
+            <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-crust-600/20 dark:ring-crust-100/15">
+              <img
+                src={image}
+                alt={`Portrait of ${name}`}
+                class="absolute left-0 w-full object-cover block"
+                style={imageStyle}
+                loading="eager"
+              />
+            </div>
+          </a>
+        ) : (
+          <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-crust-600/20 dark:ring-crust-100/15">
+            <img
+              src={image}
+              alt={`Portrait of ${name}`}
+              class="absolute left-0 w-full object-cover block"
+              style={imageStyle}
+              loading="eager"
+            />
+          </div>
+        )
+      ) : (
+        <div
+          class:list={[
+            "w-full aspect-[4/3] rounded-2xl bg-gradient-to-br",
+            swatch,
+            "grid place-items-center font-serif text-6xl",
+            "text-crust-900 dark:text-crust-50",
+            "ring-1 ring-crust-600/20 dark:ring-crust-500/30",
+          ]}
+          aria-hidden="true"
+        >
+          {initials}
+        </div>
+      )
+    }
+
+    <div class="mt-4">
+      {
+        /* No role subtitle here — the section heading above the card
+           already labels this as "Principal Investigator". */
+        href ? (
+          <a href={href} class="group block no-underline">
+            <h2
+              class="font-serif text-3xl sm:text-4xl leading-tight tracking-tight
+                     text-crust-900 dark:text-crust-50
+                     group-hover:text-burnt-700 dark:group-hover:text-burnt-300
+                     transition-colors"
+            >
+              {name}
+            </h2>
+          </a>
+        ) : (
+          <h2
+            class="font-serif text-3xl sm:text-4xl leading-tight tracking-tight
+                   text-crust-900 dark:text-crust-50"
+          >
+            {name}
+          </h2>
+        )
+      }
+    </div>
+  </div>
+
+  <!-- Right: bio + links. Bio grows; links pinned to the bottom so they
+       align with the bottom of the photo column on desktop. -->
+  <div class="mt-6 md:mt-0 flex-1 min-w-0 flex flex-col">
+    {
+      bioParagraphs.length > 0 && (
+        <div class="space-y-4">
+          {bioParagraphs.map((para) => (
+            <p
+              class="text-base leading-relaxed text-crust-700 dark:text-crust-300 text-pretty"
+              set:html={para}
+            />
+          ))}
+        </div>
+      )
+    }
+
+    {
+      hasLinks && (
+        <ul class="mt-6 md:mt-auto md:pt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+          {email && (
+            <li>
+              <a class="link-burnt" href={`mailto:${email}`}>
+                Email
+              </a>
+            </li>
+          )}
+          {website && (
+            <li>
+              <a class="link-burnt" href={website}>
+                Website
+              </a>
+            </li>
+          )}
+          {github && (
+            <li>
+              <a class="link-burnt" href={github}>
+                GitHub
+              </a>
+            </li>
+          )}
+          {scholar && (
+            <li>
+              <a class="link-burnt" href={scholar}>
+                Scholar
+              </a>
+            </li>
+          )}
+        </ul>
+      )
+    }
+  </div>
+</article>
