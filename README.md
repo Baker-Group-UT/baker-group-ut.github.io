@@ -1,13 +1,4 @@
 # The Baker Group — Website
-
-(Completely vibecoded)
-
-A warm, bakery-themed academic website for The Baker Group at UT Austin
-(empirical research on error-corrected quantum computer architecture).
-
-Built with **[Astro](https://astro.build)** + **[Tailwind CSS](https://tailwindcss.com)**.
-Content is authored in Markdown. Fast, static, easy to deploy anywhere.
-
 ---
 
 ## Run it locally
@@ -24,8 +15,6 @@ npm run dev
 npm run build      # outputs to ./dist
 npm run preview    # preview the production build locally
 ```
-
-That's it. No database, no CMS, no secrets.
 
 ---
 
