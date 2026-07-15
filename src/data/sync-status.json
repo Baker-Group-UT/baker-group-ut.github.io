@@ -1,7 +1,7 @@
 {
-  "lastSynced": "2026-07-13T00:50:27.226Z",
-  "totalSyncedPublications": 47,
-  "removedStale": 0,
+  "lastSynced": "2026-07-15T08:22:03.962Z",
+  "totalSyncedPublications": 48,
+  "removedStale": 1,
   "perPerson": {
     "aditi-awasthi": {
       "name": "Aditi Awasthi",
@@ -30,9 +30,9 @@
     "baker": {
       "name": "Prof. Jonathan M. Baker",
       "authorId": "A5086527772",
-      "kept": 58,
+      "kept": 60,
       "filteredExcluded": 0,
-      "filteredAffiliation": 32,
+      "filteredAffiliation": 30,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
@@ -78,9 +78,9 @@
     "sahil-khan": {
       "name": "Sahil Khan",
       "authorId": "A5128128161",
-      "kept": 7,
+      "kept": 9,
       "filteredExcluded": 0,
-      "filteredAffiliation": 2,
+      "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
@@ -101,14 +101,14 @@
     },
     "sayam-sethi": {
       "name": "Sayam Sethi",
-      "authorId": "A5103060287",
-      "kept": 1,
+      "authorId": "A5107545439",
+      "kept": 14,
       "filteredExcluded": 0,
-      "filteredAffiliation": 80,
+      "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 81,
+      "total": 14,
       "skipped": false
     },
     "teddy": {
