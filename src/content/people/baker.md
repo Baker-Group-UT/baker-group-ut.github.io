@@ -6,7 +6,7 @@ website: "https://www.jonathanmarkbaker.com"
 scholar: "https://scholar.google.com/citations?user=87cLl3gAAAAJ"
 order: 0
 joined: 2024-08-01
-image: "/images/people/jonathan.jpeg"
+image: ""
 image_zoom: 1
 image_y_shift: 150
 # --- Publication syncing ---------------------------------------------
