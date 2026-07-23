@@ -5,7 +5,9 @@ import sitemap from "@astrojs/sitemap";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://baker.utexas.edu",
+  // Used for canonical URLs, the sitemap, and the RSS feed. Update this
+  // when the site moves to a UT domain.
+  site: "https://baker-group-ut.github.io",
   integrations: [
     tailwind({
       // Inject a base stylesheet ourselves so we can control the order of
