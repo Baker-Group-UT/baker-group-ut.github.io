@@ -15,6 +15,46 @@
 */
 @layer base {
   :root {
+    /* ---- Palette scales -------------------------------------------
+       Consumed by tailwind.config.mjs, so `text-crust-700`, `bg-burnt-500`,
+       `border-crust-200/40` and friends all resolve through these. Light
+       mode is the bakery-warm palette: crust = toasted browns, burnt = UT
+       Austin orange, butter = pastry yellows, sage = herb greens.
+       The `.dark` block below re-points all four at blueberry. */
+    --c-crust-50:  250 246 236;
+    --c-crust-100: 245 235 214;
+    --c-crust-200: 236 217 179;
+    --c-crust-300: 223 190 134;
+    --c-crust-400: 201 154 90;
+    --c-crust-500: 176 122 58;
+    --c-crust-600: 139 90 43;
+    --c-crust-700: 107 67 32;
+    --c-crust-800: 74 46 23;
+    --c-crust-900: 45 24 16;
+
+    --c-butter-50:  255 251 234;
+    --c-butter-100: 255 243 196;
+    --c-butter-200: 252 229 136;
+    --c-butter-300: 250 219 95;
+    --c-butter-400: 244 196 48;
+    --c-butter-500: 224 168 46;
+
+    --c-burnt-50:  251 239 226;
+    --c-burnt-100: 246 215 183;
+    --c-burnt-200: 239 177 122;
+    --c-burnt-300: 226 137 71;
+    --c-burnt-400: 207 107 31;
+    --c-burnt-500: 191 87 0;     /* UT Austin burnt orange */
+    --c-burnt-600: 156 71 0;
+    --c-burnt-700: 119 54 0;
+    --c-burnt-800: 85 38 0;
+    --c-burnt-900: 54 23 0;
+
+    --c-sage-100: 231 235 221;
+    --c-sage-300: 194 204 168;
+    --c-sage-500: 156 175 136;
+    --c-sage-700: 111 128 96;
+
     /* surfaces */
     --bg:         250 246 236;   /* crust-50  — page bg */
     --bg-elev:    245 235 214;   /* crust-100 — subtly raised bands */
@@ -48,26 +88,80 @@
   }
 
   .dark {
-    /* Bakery-at-night: deep espresso base, warm cream text, caramel accents. */
-    --bg:         28 20 14;      /* near-black warm brown */
-    --bg-elev:    40 28 20;
-    --surface:    50 34 22;
+    /* ================= BLUEBERRY =================
+       Deep indigo base, lavender-white text, periwinkle accents — the
+       colour of blueberry skin and its pale bloom.
+
+       Every scale below keeps the same light-to-dark ordering as its warm
+       counterpart, which is what lets the existing markup reskin for free:
+       `dark:text-crust-50` still resolves to "the lightest tone in the
+       scale", it's just lavender-white here instead of cream. Same for
+       `dark:text-burnt-300` — still the legible mid-accent, now periwinkle.
+
+       Contrast: crust-100 text (228 231 248) on the page background
+       (15 18 36) is ~15:1, and the burnt-300 accent (155 165 242) is
+       ~7.8:1, both comfortably past WCAG AA.
+       ============================================= */
+    --c-crust-50:  242 243 252;
+    --c-crust-100: 228 231 248;
+    --c-crust-200: 203 209 240;
+    --c-crust-300: 170 179 228;
+    --c-crust-400: 139 149 214;
+    --c-crust-500: 110 120 194;
+    --c-crust-600: 86 95 166;
+    --c-crust-700: 63 70 130;
+    --c-crust-800: 43 49 92;
+    --c-crust-900: 26 30 60;
+
+    /* Pale blueberry bloom, standing in for the pastry yellows. */
+    --c-butter-50:  244 245 255;
+    --c-butter-100: 230 233 254;
+    --c-butter-200: 205 211 251;
+    --c-butter-300: 179 188 247;
+    --c-butter-400: 152 163 240;
+    --c-butter-500: 127 139 228;
+
+    /* The accent scale. Periwinkle-violet in place of burnt orange. */
+    --c-burnt-50:  239 240 254;
+    --c-burnt-100: 218 221 251;
+    --c-burnt-200: 188 194 247;
+    --c-burnt-300: 155 165 242;  /* the workhorse dark-mode accent */
+    --c-burnt-400: 126 137 234;
+    --c-burnt-500: 98 110 221;
+    --c-burnt-600: 78 88 196;
+    --c-burnt-700: 60 68 158;
+    --c-burnt-800: 44 50 118;
+    --c-burnt-900: 30 34 82;
+
+    /* Dusk blue-green, the one cool hue that was already cool. */
+    --c-sage-100: 223 230 242;
+    --c-sage-300: 169 184 216;
+    --c-sage-500: 124 140 180;
+    --c-sage-700: 74 86 128;
+
+    /* surfaces */
+    --bg:         15 18 36;      /* near-black indigo */
+    --bg-elev:    23 27 51;
+    --surface:    31 36 66;
     --surface-alpha: 0.65;
 
-    --text:       245 235 214;   /* crust-100 */
-    --text-muted: 223 190 134;   /* between crust-200 and crust-300 */
-    --text-soft:  201 154 90;    /* crust-400 */
-    --text-dim:   176 122 58;    /* crust-500 */
+    /* text */
+    --text:       228 231 248;   /* crust-100 */
+    --text-muted: 203 209 240;   /* crust-200 */
+    --text-soft:  170 179 228;   /* crust-300 */
+    --text-dim:   139 149 214;   /* crust-400 */
 
-    --border:     74 46 23;      /* crust-800 */
-    --border-soft:58 36 20;
+    /* borders */
+    --border:     43 49 92;      /* crust-800 */
+    --border-soft:31 36 66;
 
-    --accent:     226 137 71;    /* burnt-300, brighter for legibility */
-    --accent-fg:  28 20 14;
-    --accent-soft:85 38 0;       /* burnt-800 */
+    /* accent */
+    --accent:     155 165 242;   /* burnt-300, bright enough to read */
+    --accent-fg:  15 18 36;
+    --accent-soft:44 50 118;     /* burnt-800 */
 
-    --dot-color:  223 190 134;
-    --dot-alpha:  0.04;
+    --dot-color:  170 179 228;
+    --dot-alpha:  0.045;
 
     --shadow-tint: 0 0 0;
     --shadow-alpha-sm: 0.35;

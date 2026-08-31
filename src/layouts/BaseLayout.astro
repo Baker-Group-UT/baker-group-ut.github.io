@@ -45,6 +45,22 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://baker.utexa
     <meta name="color-scheme" content="light dark" />
 
     <!--
+      Google Search Console ownership verification. Two independent methods
+      are in place and Google is happy with either:
+        1. this meta tag, and
+        2. public/googleb52db3c79af8de2f.html, served at the site root.
+      Keep BOTH — Search Console re-checks periodically and drops
+      verification if the method it originally used disappears.
+
+      Note: this only proves domain ownership. It does NOT collect any
+      traffic data; that would need a separate GA4 gtag.js snippet.
+    -->
+    <meta
+      name="google-site-verification"
+      content="VlBnvpLvbaGDTQQSSrCSDSDuSs2uunPY31xG7vsxmuw"
+    />
+
+    <!--
       Runs before first paint so there is no flash of the wrong theme.
       Priority: explicit user choice > system preference.
     -->

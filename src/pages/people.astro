@@ -37,6 +37,41 @@ const byRole = groupOrder.map((role) => ({
     }),
 })).filter((g) => g.members.length > 0);
 
+// Easter egg on the PI portrait: press and hold the tile for two seconds.
+// Scoped to Baker's card by slug below so a future PI doesn't inherit it by
+// surprise. Deleting this object (and the spread on the component) removes
+// the whole thing — PIFeatureCard emits no egg markup without both props.
+// Timeline against the 12.38s clip: the seam starts across at 4.75s and
+// lands at 6.00s, the reveal holds until 10.75s, and the sweep back
+// finishes at 12.25s — just under the end of the audio.
+const EGG = {
+  eggAudio: "/audio/jonathan_wow.mp3",
+  eggImage: "/images/people/gymnathan.jpeg",
+  eggAtSeconds: 4.75,
+  eggInMs: 1250,
+  eggOutAtSeconds: 10.75,
+  eggOutMs: 1500,
+  eggHoldMs: 2000,
+  // The reveal art is a 772x900 portrait in a 4/3 tile, so only the middle
+  // ~64% of its height shows. Anchoring to the top shifts it down in the
+  // frame so his head isn't clipped — this is as far as it can go before
+  // the bottom of the crop rides up past his arms.
+  eggObjectPosition: "50% 0%",
+  eggAlt: "",
+};
+
+// Card grid width, re: the `max-w-[36rem] xl:max-w-none xl:grid-cols-2`
+// classes below. PersonCard is a "postcard": a square photo pinned to the
+// left at 2/5 of the card's width, so the photo's height is a fixed
+// fraction of the card's WIDTH, while the text column's height depends on
+// how the blurb wraps. Below roughly 560px of card width the text outgrows
+// the photo and the photo stops reaching the bottom edge, which made the
+// cards look lopsided.
+//
+// So: one column until xl (where two columns come out at 566px each), and
+// cap the single-column grid at 36rem so a lone card on a wide screen
+// doesn't blow the photo up either. Both paths land at ~570px, so the
+// cards look about the same at every breakpoint.
 const rolePlural: Record<string, string> = {
   "PI": "Principal Investigator",
   "Postdoc": "Postdocs",
@@ -88,10 +123,11 @@ const rolePlural: Record<string, string> = {
                   website={p.data.website}
                   github={p.data.github}
                   scholar={p.data.scholar}
+                  {...(p.slug === "baker" ? EGG : {})}
                 />
               ))
             ) : (
-              <div class="grid gap-5 sm:grid-cols-2">
+              <div class="grid gap-5 max-w-[36rem] xl:max-w-none xl:grid-cols-2">
                 {group.members.map((p) => (
                   <PersonCard
                     slug={p.slug}
