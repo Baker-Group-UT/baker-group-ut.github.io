@@ -33,6 +33,14 @@ openalex_id: "A5081315657"
 # affiliations:
 #     - "University of Texas at Austin"
 #     - "<his previous institution>"
+
+# Kept off the publications page on purpose. W7204620458 is the "IRIS
+# Dataset" Zenodo deposit (doi 10.5281/zenodo.22152933) — a data artefact
+# rather than a paper, so it doesn't belong in the publication list.
+# OpenAlex indexes Zenodo records as works, so without this the sync would
+# re-add it on every run.
+excluded_works:
+    - "W7204620458"
 ---
 
 Won Joon is broadly interested in various topics in quantum computing.
