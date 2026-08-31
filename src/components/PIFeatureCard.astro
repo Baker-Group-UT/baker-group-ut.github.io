@@ -24,6 +24,34 @@ interface Props {
   scholar?: string;
   /** If provided, name + photo link through to /people/<slug>. */
   slug?: string;
+  /**
+   * Optional easter egg. Press and hold the portrait tile for `eggHoldMs`
+   * and the audio plays; `eggAtSeconds` into the clip, the portrait wipes
+   * over to `eggImage` behind a glowing seam that throws sparkles, then
+   * quietly wipes back when the audio ends. Omit `eggImage` or `eggAudio`
+   * and none of the extra markup or behaviour is emitted at all.
+   */
+  eggImage?: string;
+  eggAudio?: string;
+  /** Seconds into the clip at which the seam starts sweeping across. */
+  eggAtSeconds?: number;
+  /** Duration of that sweep, so it lands at eggAtSeconds + this. */
+  eggInMs?: number;
+  /** Seconds into the clip at which the seam starts sweeping back. */
+  eggOutAtSeconds?: number;
+  /** Duration of the sweep back. */
+  eggOutMs?: number;
+  /** How long the press has to be held to arm it. */
+  eggHoldMs?: number;
+  /**
+   * `object-position` for the revealed image. The tile is 4/3 but the
+   * reveal art is usually a portrait, so `object-cover` shows a horizontal
+   * band of it and the default 50% centring can decapitate the subject.
+   * Lower the second value to shift the image down inside the frame.
+   */
+  eggObjectPosition?: string;
+  /** Alt text for the revealed image. */
+  eggAlt?: string;
 }
 const {
   name,
@@ -36,7 +64,18 @@ const {
   github,
   scholar,
   slug,
+  eggImage,
+  eggAudio,
+  eggAtSeconds = 4.75,
+  eggInMs = 1250,
+  eggOutAtSeconds = 10.75,
+  eggOutMs = 1500,
+  eggHoldMs = 2000,
+  eggObjectPosition = "50% 0%",
+  eggAlt = "",
 } = Astro.props;
+
+const eggEnabled = Boolean(eggImage && eggAudio);
 
 // Same anti-gap trick as PersonCard: oversize the image vertically by the
 // shift extent and anchor it so the extra hangs opposite the shift
@@ -97,6 +136,21 @@ const bioParagraphs = (bio ?? "")
   <!-- Left: portrait + name + role. Pinned width on desktop so the bio
        gets all remaining space; stacks on top on mobile. -->
   <div class="md:w-2/5 md:shrink-0 flex flex-col">
+    <div
+      class:list={[
+        "relative rounded-2xl",
+        // Long-press on touch otherwise selects the tile or pops the
+        // callout menu mid-gesture.
+        eggEnabled && "select-none [-webkit-touch-callout:none]",
+      ]}
+      data-egg-root={eggEnabled ? "" : undefined}
+      data-egg-src={eggEnabled ? eggAudio : undefined}
+      data-egg-at={eggEnabled ? String(eggAtSeconds) : undefined}
+      data-egg-in={eggEnabled ? String(eggInMs) : undefined}
+      data-egg-out-at={eggEnabled ? String(eggOutAtSeconds) : undefined}
+      data-egg-out={eggEnabled ? String(eggOutMs) : undefined}
+      data-egg-hold={eggEnabled ? String(eggHoldMs) : undefined}
+    >
     {
       /* Rounded + clipped wrapper: keeps the rounded corners visible even
          when the inner <img> is scaled past the frame via image_zoom. */
@@ -143,6 +197,57 @@ const bioParagraphs = (bio ?? "")
         </div>
       )
     }
+      {
+        eggEnabled && (
+          <>
+            {/* The reveal sits above the portrait, clipped to nothing until
+                the seam sweeps across. `will-change` keeps the clip-path
+                animation off the main thread on Safari. */}
+            <div
+              data-egg-reveal
+              class="pointer-events-none absolute inset-0 rounded-2xl overflow-hidden
+                     ring-1 ring-crust-600/20 dark:ring-crust-100/15
+                     opacity-0 [clip-path:inset(0_100%_0_0)] [will-change:clip-path]"
+              aria-hidden="true"
+            >
+              <img
+                data-egg-img
+                src={eggImage}
+                alt={eggAlt}
+                class="h-full w-full object-cover block"
+                style={`object-position: ${eggObjectPosition}`}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+
+            {/* The glowing seam that the sparkles ride. */}
+            <div
+              data-egg-seam
+              class="pointer-events-none absolute inset-y-0 w-[3px] opacity-0 rounded-full"
+              aria-hidden="true"
+            />
+
+            {/* Particles. Sized to the tile in JS at DPR. */}
+            <canvas
+              data-egg-canvas
+              class="pointer-events-none absolute inset-0 h-full w-full opacity-0"
+              aria-hidden="true"
+            />
+
+            {/* Barely-there hint that a hold is registering. Stays at 0
+                opacity for the first ~35% of the hold so ordinary clicks
+                never reveal that anything is here. */}
+            <div
+              data-egg-charge
+              class="pointer-events-none absolute inset-0 rounded-2xl opacity-0
+                     ring-2 ring-inset ring-[rgb(var(--accent))]"
+              aria-hidden="true"
+            />
+          </>
+        )
+      }
+    </div>
 
     <div class="mt-4">
       {
@@ -223,3 +328,360 @@ const bioParagraphs = (bio ?? "")
     }
   </div>
 </article>
+
+<script>
+  /* ------------------------------------------------------------------
+     PI portrait easter egg.
+
+     Press and hold the portrait for ~2s and the clip plays. Four points
+     on the audio timeline drive the visuals, all of them configurable
+     from the component props:
+
+       eggAt      the seam starts sweeping across  (default 4.75s)
+       + eggInMs  ...and lands, fully revealed     (default 1.25s -> 6.00s)
+       eggOutAt   the seam starts sweeping back    (default 10.75s)
+       + eggOutMs ...and the tile is itself again  (default 1.5s -> 12.25s)
+
+     Both edges are driven off `audio.currentTime` rather than timers, so
+     they stay pinned to the sound even if a frame is dropped or the clip
+     is slow to start. The revert also has an `ended` fallback in case the
+     file is shorter than eggOutAt, so the tile can't get stuck flipped.
+
+     Nothing here is fetched until the first press: a visitor who never
+     finds it never pays for the audio or the image.
+  ------------------------------------------------------------------ */
+
+  type Particle = {
+    x: number; y: number; vx: number; vy: number;
+    life: number; ttl: number; size: number;
+  };
+
+  const SPARK_TAIL_MS = 700; // particles keep living after it lands
+  const MAX_TILT_DEG = 9;    // peak rotateY, enough to read as a flip
+
+  function setup(root: HTMLElement) {
+    const src = root.dataset.eggSrc;
+    const flipAt = Number(root.dataset.eggAt ?? "4.75");
+    const wipeInMs = Number(root.dataset.eggIn ?? "1250");
+    const revertAt = Number(root.dataset.eggOutAt ?? "10.75");
+    const wipeOutMs = Number(root.dataset.eggOut ?? "1500");
+    const holdMs = Number(root.dataset.eggHold ?? "2000");
+    const revealQ = root.querySelector<HTMLElement>("[data-egg-reveal]");
+    const imgQ = root.querySelector<HTMLImageElement>("[data-egg-img]");
+    const seamQ = root.querySelector<HTMLElement>("[data-egg-seam]");
+    const canvasQ = root.querySelector<HTMLCanvasElement>("[data-egg-canvas]");
+    const chargeQ = root.querySelector<HTMLElement>("[data-egg-charge]");
+    if (!src || !revealQ || !imgQ || !seamQ || !canvasQ || !chargeQ) return;
+
+    // Re-bind with explicit types: TypeScript doesn't carry the null checks
+    // above into the closures below, so the narrowed values are pinned here
+    // once instead of being asserted at every use site.
+    const audioSrc: string = src;
+    const reveal: HTMLElement = revealQ;
+    const img: HTMLImageElement = imgQ;
+    const seam: HTMLElement = seamQ;
+    const canvas: HTMLCanvasElement = canvasQ;
+    const charge: HTMLElement = chargeQ;
+
+    const ctx = canvas.getContext("2d");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let audio: HTMLAudioElement | null = null;
+    let state: "idle" | "charging" | "running" = "idle";
+    let chargeRaf = 0;
+    let watchRaf = 0;
+    let wipeRaf = 0;
+    let particles: Particle[] = [];
+
+    /** Current accent colour, so sparkles match whichever theme is on. */
+    function accent(): string {
+      const v = getComputedStyle(document.documentElement)
+        .getPropertyValue("--accent")
+        .trim();
+      return v || "191 87 0";
+    }
+
+    function sizeCanvas() {
+      const r = root.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.round(r.width * dpr));
+      canvas.height = Math.max(1, Math.round(r.height * dpr));
+      ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    // ---- charging ------------------------------------------------------
+
+    function beginCharge() {
+      if (state !== "idle") return;
+      state = "charging";
+
+      // Warm the assets now; the hold gives them a ~2s head start so the
+      // flip isn't waiting on the network.
+      if (!audio) {
+        audio = new Audio(audioSrc);
+        audio.preload = "auto";
+        audio.load();
+      }
+      if (!img.dataset.warmed) {
+        img.dataset.warmed = "1";
+        img.decode?.().catch(() => {});
+      }
+
+      const start = performance.now();
+      const tick = (now: number) => {
+        if (state !== "charging") return;
+        const p = Math.min(1, (now - start) / holdMs);
+        // Dead zone for the first third so an ordinary click shows nothing.
+        const shown = p < 0.35 ? 0 : (p - 0.35) / 0.65;
+        charge.style.opacity = String(shown * 0.45);
+        charge.style.transform = `scale(${1 + shown * 0.012})`;
+        if (p >= 1) {
+          fire();
+          return;
+        }
+        chargeRaf = requestAnimationFrame(tick);
+      };
+      chargeRaf = requestAnimationFrame(tick);
+    }
+
+    function cancelCharge() {
+      if (state !== "charging") return;
+      state = "idle";
+      cancelAnimationFrame(chargeRaf);
+      charge.style.transition = "opacity 220ms ease";
+      charge.style.opacity = "0";
+      charge.style.transform = "";
+      window.setTimeout(() => (charge.style.transition = ""), 240);
+    }
+
+    // ---- firing --------------------------------------------------------
+
+    function fire() {
+      state = "running";
+      cancelAnimationFrame(chargeRaf);
+      charge.style.transition = "opacity 300ms ease";
+      charge.style.opacity = "0";
+      charge.style.transform = "";
+
+      let flipped = false;
+      let reverting = false;
+      let fallbackStart = performance.now();
+      let usingFallback = false;
+
+      const revert = (lateBy = 0) => {
+        if (reverting) return; // `ended` may race the timeline threshold
+        reverting = true;
+        cancelAnimationFrame(watchRaf);
+        // Sweep back, then hand the tile back exactly as we found it.
+        runWipe(-1, wipeOutMs, lateBy, () => {
+          state = "idle";
+          reveal.style.opacity = "0";
+          reveal.style.clipPath = "inset(0 100% 0 0)";
+          root.style.transform = "";
+          canvas.style.opacity = "0";
+          particles = [];
+          ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        });
+      };
+
+      if (audio) {
+        audio.currentTime = 0;
+        const played = audio.play();
+        if (played && typeof played.catch === "function") {
+          // Autoplay policy shouldn't bite (this is a user gesture), but if
+          // playback is refused, run the visual on a plain timer so the egg
+          // still works rather than silently doing nothing.
+          played.catch(() => {
+            usingFallback = true;
+            fallbackStart = performance.now();
+          });
+        }
+        // Safety net only: if the file turns out to be shorter than
+        // revertAt, `ended` is the last chance to put the tile back.
+        // Wrapped, not passed directly: the listener's Event argument would
+        // otherwise land in `lateBy` and poison the sweep timing.
+        audio.addEventListener("ended", () => revert(), { once: true });
+      } else {
+        usingFallback = true;
+      }
+
+      const watch = (now: number) => {
+        if (state !== "running") return;
+        const t = usingFallback || !audio
+          ? (now - fallbackStart) / 1000
+          : audio.currentTime;
+        // A frame only notices a threshold once it's already been crossed.
+        // Feeding that overshoot back in phase-locks each sweep to the
+        // audio timeline instead of to whichever frame spotted it, so the
+        // landing times hold even at low frame rates.
+        if (!flipped && t >= flipAt) {
+          flipped = true;
+          runWipe(1, wipeInMs, (t - flipAt) * 1000);
+        }
+        if (flipped && !reverting && t >= revertAt) {
+          revert((t - revertAt) * 1000);
+          return;
+        }
+        watchRaf = requestAnimationFrame(watch);
+      };
+      watchRaf = requestAnimationFrame(watch);
+    }
+
+    // ---- the sweep -----------------------------------------------------
+
+    function runWipe(
+      dir: 1 | -1,
+      durationMs: number,
+      lateBy = 0,
+      done?: () => void,
+    ) {
+      sizeCanvas();
+      const rect = root.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      reveal.style.opacity = "1";
+
+      if (reduced) {
+        // No sweep, no sparkles — just crossfade over what's left of the
+        // same span, so the audio still lines up.
+        const span = Math.max(0, durationMs - lateBy);
+        reveal.style.transition = `opacity ${span}ms ease`;
+        reveal.style.clipPath = "inset(0 0 0 0)";
+        reveal.style.opacity = dir === 1 ? "1" : "0";
+        window.setTimeout(() => {
+          reveal.style.transition = "";
+          done?.();
+        }, span + 20);
+        return;
+      }
+
+      canvas.style.opacity = "1";
+      // Backdate the start by however late this sweep was noticed.
+      const start = performance.now() - Math.max(0, lateBy);
+      const rgb = accent();
+
+      const frame = (now: number) => {
+        const raw = Math.min(1, (now - start) / durationMs);
+        // Ease in-out so the seam accelerates off the edge and settles.
+        const e = raw < 0.5 ? 2 * raw * raw : 1 - Math.pow(-2 * raw + 2, 2) / 2;
+        const p = dir === 1 ? e : 1 - e;
+        const x = p * w;
+
+        reveal.style.clipPath = `inset(0 ${(1 - p) * 100}% 0 0)`;
+
+        // A touch of perspective so it reads as a flip rather than a wipe.
+        const tilt = Math.sin(raw * Math.PI) * MAX_TILT_DEG * dir;
+        root.style.transform = `perspective(900px) rotateY(${tilt}deg)`;
+
+        if (raw < 1) {
+          seam.style.opacity = "1";
+          seam.style.left = `${x - 1.5}px`;
+          seam.style.background = `rgb(${rgb})`;
+          seam.style.boxShadow = `0 0 12px 3px rgb(${rgb} / 0.85), 0 0 28px 10px rgb(${rgb} / 0.35)`;
+          // Sparkles are born on the seam and thrown off it.
+          for (let i = 0; i < 7; i++) {
+            const spread = dir === 1 ? -1 : 1;
+            particles.push({
+              x,
+              y: Math.random() * h,
+              vx: spread * (0.4 + Math.random() * 2.6) + (Math.random() - 0.5) * 1.2,
+              vy: (Math.random() - 0.5) * 2.4,
+              life: 0,
+              ttl: 420 + Math.random() * 520,
+              size: 1 + Math.random() * 2.4,
+            });
+          }
+        } else {
+          seam.style.opacity = "0";
+        }
+
+        drawParticles(rgb);
+
+        if (raw < 1 || particles.length > 0) {
+          wipeRaf = requestAnimationFrame(frame);
+        } else {
+          root.style.transform = "";
+          canvas.style.opacity = "0";
+          done?.();
+        }
+      };
+      cancelAnimationFrame(wipeRaf);
+      wipeRaf = requestAnimationFrame(frame);
+    }
+
+    let lastDraw = performance.now();
+    function drawParticles(rgb: string) {
+      if (!ctx) return;
+      const now = performance.now();
+      const dt = Math.min(48, now - lastDraw);
+      lastDraw = now;
+
+      const r = root.getBoundingClientRect();
+      ctx.clearRect(0, 0, r.width, r.height);
+      ctx.globalCompositeOperation = "lighter";
+
+      const next: Particle[] = [];
+      for (const s of particles) {
+        s.life += dt;
+        if (s.life >= s.ttl) continue;
+        s.x += s.vx * (dt / 16);
+        s.y += s.vy * (dt / 16);
+        s.vy += 0.045 * (dt / 16); // a little gravity so they drift down
+        s.vx *= 0.985;
+
+        const k = 1 - s.life / s.ttl;
+        const a = k * k;
+        ctx.fillStyle = `rgb(${rgb} / ${a})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size * k, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cross-flare gives the dots a "sparkle" read rather than confetti.
+        if (s.size > 2) {
+          ctx.strokeStyle = `rgb(${rgb} / ${a * 0.55})`;
+          ctx.lineWidth = 0.8;
+          const len = s.size * 3 * k;
+          ctx.beginPath();
+          ctx.moveTo(s.x - len, s.y);
+          ctx.lineTo(s.x + len, s.y);
+          ctx.moveTo(s.x, s.y - len);
+          ctx.lineTo(s.x, s.y + len);
+          ctx.stroke();
+        }
+        next.push(s);
+      }
+      ctx.globalCompositeOperation = "source-over";
+      particles = next;
+
+      if (particles.length === 0 && performance.now() - lastDraw > SPARK_TAIL_MS) {
+        ctx.clearRect(0, 0, r.width, r.height);
+      }
+    }
+
+    // ---- wiring --------------------------------------------------------
+
+    root.addEventListener("pointerdown", (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      beginCharge();
+    });
+    for (const ev of ["pointerup", "pointercancel", "pointerleave"] as const) {
+      root.addEventListener(ev, cancelCharge);
+    }
+    window.addEventListener("blur", cancelCharge);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) cancelCharge();
+    });
+    // A long press on touch would otherwise pop the callout / select text.
+    root.addEventListener("contextmenu", (e) => {
+      if (state === "charging") e.preventDefault();
+    });
+    root.addEventListener("dragstart", (e) => e.preventDefault());
+    window.addEventListener("resize", () => {
+      if (state === "running") sizeCanvas();
+    });
+  }
+
+  for (const el of document.querySelectorAll<HTMLElement>("[data-egg-root]")) {
+    setup(el);
+  }
+</script>
