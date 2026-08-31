@@ -834,6 +834,28 @@ async function main(): Promise<void> {
     }
   }
 
+  // --- Total-failure guard ---------------------------------------------
+  // Per-person fetch errors are deliberately non-fatal: one bad author ID
+  // shouldn't sink the run. But if OpenAlex is down, rate-limiting us, or
+  // the network is broken, EVERY person errors, byWorkId comes back empty,
+  // and writeSyncedFiles would then delete every synced-*.md file as
+  // "stale" — a silent wipe of the whole publications list that the
+  // workflow would happily commit. Bail out before writing anything.
+  const attempted = Object.values(report).filter((r) => !r.skipped);
+  const errored = attempted.filter((r) => r.error);
+  if (attempted.length > 0 && errored.length === attempted.length) {
+    console.error(
+      `\nAborting: all ${attempted.length} OpenAlex fetch(es) failed — ` +
+        `refusing to rewrite publications from an empty result set.`,
+    );
+    for (const r of errored) console.error(`  - ${r.name}: ${r.error}`);
+    console.error(
+      "\nNo files were changed. This is almost always a transient OpenAlex " +
+        "or network problem; re-run the workflow to retry.",
+    );
+    process.exit(1);
+  }
+
   // Collapse duplicate OpenAlex records (preprint + published + DataCite
   // copies of the same paper) into one file each, preferring the published
   // version and carrying the arXiv link along.
