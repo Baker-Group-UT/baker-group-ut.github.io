@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://baker.utexas.edu/sitemap-index.xml
+Sitemap: https://baker-group-ut.github.io/sitemap-index.xml
