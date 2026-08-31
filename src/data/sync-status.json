@@ -1,7 +1,7 @@
 {
-  "lastSynced": "2026-07-15T08:22:03.962Z",
-  "totalSyncedPublications": 48,
-  "removedStale": 1,
+  "lastSynced": "2026-08-31T17:50:55.198Z",
+  "totalSyncedPublications": 50,
+  "removedStale": 0,
   "perPerson": {
     "aditi-awasthi": {
       "name": "Aditi Awasthi",
@@ -122,6 +122,18 @@
       "coauthorRescued": 0,
       "total": 0,
       "skipped": true
+    },
+    "won-joon-yun": {
+      "name": "Won Joon Yun",
+      "authorId": "A5081315657",
+      "kept": 3,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 83,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 86,
+      "skipped": false
     }
   }
 }
