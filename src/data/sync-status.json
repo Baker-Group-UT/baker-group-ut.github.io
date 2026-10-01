@@ -1,18 +1,18 @@
 {
-  "lastSynced": "2026-09-24T21:46:32.979Z",
-  "totalSyncedPublications": 50,
+  "lastSynced": "2026-10-01T12:47:46.012Z",
+  "totalSyncedPublications": 53,
   "removedStale": 0,
   "perPerson": {
     "aditi-awasthi": {
       "name": "Aditi Awasthi",
       "authorId": "A5004049067",
-      "kept": 7,
+      "kept": 4,
       "filteredExcluded": 0,
       "filteredAffiliation": 10,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 17,
+      "total": 14,
       "skipped": false
     },
     "ali": {
@@ -30,21 +30,21 @@
     "baker": {
       "name": "Prof. Jonathan M. Baker",
       "authorId": "A5086527772",
-      "kept": 61,
+      "kept": 62,
       "filteredExcluded": 0,
-      "filteredAffiliation": 30,
+      "filteredAffiliation": 8,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 91,
+      "total": 70,
       "skipped": false
     },
     "cordell-mazzetti": {
       "name": "Cordell Mazzetti",
       "authorId": "A5133579213",
-      "kept": 2,
+      "kept": 1,
       "filteredExcluded": 0,
-      "filteredAffiliation": 0,
+      "filteredAffiliation": 1,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
@@ -66,25 +66,25 @@
     "maxwell-poster": {
       "name": "Maxwell Poster",
       "authorId": "A5115840517",
-      "kept": 7,
+      "kept": 4,
       "filteredExcluded": 0,
       "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 7,
+      "total": 4,
       "skipped": false
     },
     "sahil-khan": {
       "name": "Sahil Khan",
       "authorId": "A5128128161",
-      "kept": 9,
+      "kept": 5,
       "filteredExcluded": 0,
       "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 9,
+      "total": 5,
       "skipped": false
     },
     "sarvesh-raghuraman": {
@@ -102,13 +102,13 @@
     "sayam-sethi": {
       "name": "Sayam Sethi",
       "authorId": "A5107545439",
-      "kept": 15,
+      "kept": 7,
       "filteredExcluded": 0,
       "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 15,
+      "total": 7,
       "skipped": false
     },
     "teddy": {
@@ -128,11 +128,11 @@
       "authorId": "A5081315657",
       "kept": 1,
       "filteredExcluded": 2,
-      "filteredAffiliation": 82,
+      "filteredAffiliation": 80,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 85,
+      "total": 83,
       "skipped": false
     }
   }
