@@ -16,7 +16,13 @@ const formatted = date.toLocaleDateString("en-US", {
 
 <article class="card group flex flex-col gap-3">
   <div class="flex items-center gap-3 text-xs">
-    <time datetime={date.toISOString()} class="text-crust-600 dark:text-crust-400">{formatted}</time>
+    <!--
+      Plain <span>, not <time datetime>: these cards appear on listing pages
+      (home, /news), and a machine-readable date there makes Google stamp
+      the whole listing page with that post's date in search results.
+      Individual post pages (news/[slug].astro) keep their <time> element.
+    -->
+    <span class="text-crust-600 dark:text-crust-400">{formatted}</span>
     {tag && <span class="chip">{tag}</span>}
   </div>
   <h3 class="font-serif text-xl leading-snug text-crust-900 dark:text-crust-50
