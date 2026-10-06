@@ -13,9 +13,9 @@ interface Props {
 }
 
 const {
-  title = "The Baker Group — UT Austin",
+  title = "The Baker Group | UT Austin",
   description =
-    "The Baker Group at The University of Texas at Austin studies error-corrected quantum computer architecture through empirical research.",
+    "Prof. Jonathan Baker's research group at UT Austin designs and analyzes architectures, compilers, and systems for error-corrected quantum computers.",
   eyebrow,
   pageTitle,
   pageSubtitle,
@@ -23,6 +23,18 @@ const {
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://baker.utexas.edu");
+const isHome = Astro.url.pathname === "/" || Astro.url.pathname === "";
+
+// Homepage-only structured data. Tells Google the site's name (so results
+// show "The Baker Group" rather than "GitHub" above the link). Deliberately
+// carries no datePublished/dateModified so no date is shown in results.
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "The Baker Group",
+  alternateName: ["Baker Group", "The Baker Group at UT Austin"],
+  url: new URL("/", Astro.site ?? "https://baker.utexas.edu").href,
+};
 ---
 
 <!doctype html>
@@ -40,6 +52,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://baker.utexa
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical.href} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:site_name" content="The Baker Group" />
+    {isHome && (
+      <script type="application/ld+json" set:html={JSON.stringify(siteJsonLd)} />
+    )}
 
     <meta name="generator" content={Astro.generator} />
     <meta name="color-scheme" content="light dark" />
