@@ -1,18 +1,18 @@
 {
-  "lastSynced": "2026-10-01T12:47:46.012Z",
+  "lastSynced": "2026-10-15T11:07:18.308Z",
   "totalSyncedPublications": 53,
-  "removedStale": 0,
+  "removedStale": 2,
   "perPerson": {
     "aditi-awasthi": {
       "name": "Aditi Awasthi",
       "authorId": "A5004049067",
-      "kept": 4,
+      "kept": 5,
       "filteredExcluded": 0,
       "filteredAffiliation": 10,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 14,
+      "total": 15,
       "skipped": false
     },
     "ali": {
@@ -30,13 +30,13 @@
     "baker": {
       "name": "Prof. Jonathan M. Baker",
       "authorId": "A5086527772",
-      "kept": 62,
+      "kept": 52,
       "filteredExcluded": 0,
-      "filteredAffiliation": 8,
+      "filteredAffiliation": 2,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 70,
+      "total": 54,
       "skipped": false
     },
     "cordell-mazzetti": {
@@ -66,18 +66,6 @@
     "maxwell-poster": {
       "name": "Maxwell Poster",
       "authorId": "A5115840517",
-      "kept": 4,
-      "filteredExcluded": 0,
-      "filteredAffiliation": 0,
-      "filteredPostAlumni": 0,
-      "extraAdded": 0,
-      "coauthorRescued": 0,
-      "total": 4,
-      "skipped": false
-    },
-    "sahil-khan": {
-      "name": "Sahil Khan",
-      "authorId": "A5128128161",
       "kept": 5,
       "filteredExcluded": 0,
       "filteredAffiliation": 0,
@@ -85,6 +73,18 @@
       "extraAdded": 0,
       "coauthorRescued": 0,
       "total": 5,
+      "skipped": false
+    },
+    "sahil-khan": {
+      "name": "Sahil Khan",
+      "authorId": "A5128128161",
+      "kept": 5,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 1,
+      "filteredPostAlumni": 0,
+      "extraAdded": 0,
+      "coauthorRescued": 0,
+      "total": 6,
       "skipped": false
     },
     "sarvesh-raghuraman": {
@@ -102,13 +102,13 @@
     "sayam-sethi": {
       "name": "Sayam Sethi",
       "authorId": "A5107545439",
-      "kept": 7,
+      "kept": 8,
       "filteredExcluded": 0,
       "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 7,
+      "total": 8,
       "skipped": false
     },
     "teddy": {
@@ -127,12 +127,12 @@
       "name": "Won Joon Yun",
       "authorId": "A5081315657",
       "kept": 1,
-      "filteredExcluded": 2,
-      "filteredAffiliation": 80,
+      "filteredExcluded": 1,
+      "filteredAffiliation": 58,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 83,
+      "total": 60,
       "skipped": false
     }
   }
