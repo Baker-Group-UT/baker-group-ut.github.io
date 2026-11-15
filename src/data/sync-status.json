@@ -1,14 +1,14 @@
 {
-  "lastSynced": "2026-10-01T12:47:46.012Z",
-  "totalSyncedPublications": 53,
-  "removedStale": 0,
+  "lastSynced": "2026-11-15T13:42:40.247Z",
+  "totalSyncedPublications": 50,
+  "removedStale": 6,
   "perPerson": {
     "aditi-awasthi": {
       "name": "Aditi Awasthi",
       "authorId": "A5004049067",
-      "kept": 4,
+      "kept": 5,
       "filteredExcluded": 0,
-      "filteredAffiliation": 10,
+      "filteredAffiliation": 9,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
@@ -30,13 +30,13 @@
     "baker": {
       "name": "Prof. Jonathan M. Baker",
       "authorId": "A5086527772",
-      "kept": 62,
+      "kept": 51,
       "filteredExcluded": 0,
-      "filteredAffiliation": 8,
+      "filteredAffiliation": 1,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 70,
+      "total": 52,
       "skipped": false
     },
     "cordell-mazzetti": {
@@ -66,26 +66,28 @@
     "maxwell-poster": {
       "name": "Maxwell Poster",
       "authorId": "A5115840517",
-      "kept": 4,
+      "kept": 0,
       "filteredExcluded": 0,
       "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 4,
-      "skipped": false
+      "total": 0,
+      "skipped": false,
+      "error": "OpenAlex 429 on https://api.openalex.org/works?filter=author.id:A5115840517&per-page=200&cursor=*&select=id,doi,title,display_name,publication_year,publication_date,authorships,primary_location,type,topics,open_access,best_oa_location,locations,updated_date&mailto=jonathan.baker%40austin.utexas.edu: {\"error\":\"Rate limit exceeded\",\"message\":\"Insufficient budget. This request has no API key, so it counts against the free daily budget shared by everyone on your network's IP address, and that budget is used up ($0 remaining; resets at midnight UTC). Use your own key instead: add ?api_key=YOUR_KEY t"
     },
     "sahil-khan": {
       "name": "Sahil Khan",
       "authorId": "A5128128161",
-      "kept": 5,
+      "kept": 0,
       "filteredExcluded": 0,
       "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 5,
-      "skipped": false
+      "total": 0,
+      "skipped": false,
+      "error": "OpenAlex 429 on https://api.openalex.org/works?filter=author.id:A5128128161&per-page=200&cursor=*&select=id,doi,title,display_name,publication_year,publication_date,authorships,primary_location,type,topics,open_access,best_oa_location,locations,updated_date&mailto=jonathan.baker%40austin.utexas.edu: {\"error\":\"Rate limit exceeded\",\"message\":\"Insufficient budget. This request has no API key, so it counts against the free daily budget shared by everyone on your network's IP address, and that budget is used up ($0 remaining; resets at midnight UTC). Use your own key instead: add ?api_key=YOUR_KEY t"
     },
     "sarvesh-raghuraman": {
       "name": "Sarvesh Raghuraman",
@@ -94,22 +96,24 @@
       "filteredExcluded": 0,
       "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
-      "extraAdded": 1,
+      "extraAdded": 0,
       "coauthorRescued": 0,
       "total": 0,
-      "skipped": false
+      "skipped": false,
+      "error": "OpenAlex 429 on https://api.openalex.org/works?filter=author.id:A0000000000&per-page=200&cursor=*&select=id,doi,title,display_name,publication_year,publication_date,authorships,primary_location,type,topics,open_access,best_oa_location,locations,updated_date&mailto=jonathan.baker%40austin.utexas.edu: {\"error\":\"Rate limit exceeded\",\"message\":\"Insufficient budget. This request has no API key, so it counts against the free daily budget shared by everyone on your network's IP address, and that budget is used up ($0 remaining; resets at midnight UTC). Use your own key instead: add ?api_key=YOUR_KEY t"
     },
     "sayam-sethi": {
       "name": "Sayam Sethi",
       "authorId": "A5107545439",
-      "kept": 7,
+      "kept": 0,
       "filteredExcluded": 0,
       "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 7,
-      "skipped": false
+      "total": 0,
+      "skipped": false,
+      "error": "OpenAlex 429 on https://api.openalex.org/works?filter=author.id:A5107545439&per-page=200&cursor=*&select=id,doi,title,display_name,publication_year,publication_date,authorships,primary_location,type,topics,open_access,best_oa_location,locations,updated_date&mailto=jonathan.baker%40austin.utexas.edu: {\"error\":\"Rate limit exceeded\",\"message\":\"Insufficient budget. This request has no API key, so it counts against the free daily budget shared by everyone on your network's IP address, and that budget is used up ($0 remaining; resets at midnight UTC). Use your own key instead: add ?api_key=YOUR_KEY t"
     },
     "teddy": {
       "name": "Teddy",
@@ -126,14 +130,15 @@
     "won-joon-yun": {
       "name": "Won Joon Yun",
       "authorId": "A5081315657",
-      "kept": 1,
-      "filteredExcluded": 2,
-      "filteredAffiliation": 80,
+      "kept": 0,
+      "filteredExcluded": 0,
+      "filteredAffiliation": 0,
       "filteredPostAlumni": 0,
       "extraAdded": 0,
       "coauthorRescued": 0,
-      "total": 83,
-      "skipped": false
+      "total": 0,
+      "skipped": false,
+      "error": "OpenAlex 429 on https://api.openalex.org/works?filter=author.id:A5081315657&per-page=200&cursor=*&select=id,doi,title,display_name,publication_year,publication_date,authorships,primary_location,type,topics,open_access,best_oa_location,locations,updated_date&mailto=jonathan.baker%40austin.utexas.edu: {\"error\":\"Rate limit exceeded\",\"message\":\"Insufficient budget. This request has no API key, so it counts against the free daily budget shared by everyone on your network's IP address, and that budget is used up ($0 remaining; resets at midnight UTC). Use your own key instead: add ?api_key=YOUR_KEY t"
     }
   }
 }
